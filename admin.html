@@ -150,9 +150,8 @@
             document.body.style.cursor = 'wait';
 
             try {
-                // Gọi API Universal (Backend v6.5 chấp nhận cả /admin/users và /api/admin/users)
-                // Lưu ý: Nếu vẫn lỗi 404, bạn có thể thử bỏ '/api' ở đây nếu backend chưa update kịp v6.5
-                const res = await fetch(`${HF_API_URL}/api/admin/users`, {
+                // FIXED: Changed endpoint from /api/admin/users to /admin/users based on 404 logs
+                const res = await fetch(`${HF_API_URL}/admin/users`, {
                     headers: { 'key': key }
                 });
 
@@ -246,7 +245,8 @@
         async function approveUser(email, key) {
             if(!confirm(`Duyệt quyền truy cập cho ${email}?`)) return;
             try {
-                const res = await fetch(`${HF_API_URL}/api/admin/approve`, {
+                // FIXED: Changed from /api/admin/approve to /admin/approve
+                const res = await fetch(`${HF_API_URL}/admin/approve`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ email: email, admin_key: key })
@@ -260,7 +260,8 @@
         async function deleteUser(email, key) {
             if(!confirm(`XÓA tài khoản ${email}? Hành động này không thể hoàn tác.`)) return;
             try {
-                const res = await fetch(`${HF_API_URL}/api/admin/delete`, {
+                // FIXED: Changed from /api/admin/delete to /admin/delete
+                const res = await fetch(`${HF_API_URL}/admin/delete`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ email: email, admin_key: key })
