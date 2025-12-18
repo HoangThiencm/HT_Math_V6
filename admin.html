@@ -150,7 +150,7 @@
             document.body.style.cursor = 'wait';
 
             try {
-                // FIXED: Changed endpoint from /api/admin/users to /admin/users based on 404 logs
+                // Endpoint: /admin/users (đã fix từ /api/admin/users)
                 const res = await fetch(`${HF_API_URL}/admin/users`, {
                     headers: { 'key': key }
                 });
@@ -160,7 +160,24 @@
                     else throw new Error("Lỗi kết nối Server (" + res.status + ")");
                 }
                 
-                const users = await res.json();
+                const rawData = await res.json();
+                console.log("Admin Data Response:", rawData); // Debug log
+
+                // XỬ LÝ DỮ LIỆU THÔNG MINH:
+                // Server có thể trả về mảng trực tiếp [] hoặc object {users: []} hoặc {data: []}
+                let users = [];
+                if (Array.isArray(rawData)) {
+                    users = rawData;
+                } else if (rawData.users && Array.isArray(rawData.users)) {
+                    users = rawData.users;
+                } else if (rawData.data && Array.isArray(rawData.data)) {
+                    users = rawData.data;
+                } else {
+                    console.warn("Không nhận diện được format dữ liệu:", rawData);
+                    // Fallback: nếu object có key nào đó là mảng, thử lấy nó
+                    const potentialArray = Object.values(rawData).find(val => Array.isArray(val));
+                    if (potentialArray) users = potentialArray;
+                }
                 
                 // Lưu key lại để lần sau đỡ nhập
                 localStorage.setItem('adminKey', key);
@@ -173,6 +190,7 @@
                 document.getElementById('dashboardSection').classList.remove('hidden');
 
             } catch (e) {
+                console.error(e);
                 errorMsg.textContent = e.message;
                 errorMsg.classList.remove('hidden');
             } finally {
@@ -197,8 +215,8 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            if(users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-12 text-center text-slate-400 italic flex flex-col items-center justify-center"><i class="fas fa-inbox text-4xl mb-2"></i><br>Chưa có dữ liệu người dùng nào.</td></tr>';
+            if(!users || users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-12 text-center text-slate-400 italic flex flex-col items-center justify-center"><i class="fas fa-inbox text-4xl mb-2"></i><br>Chưa có dữ liệu người dùng nào.<br><span class="text-xs text-slate-300 mt-2">(Kiểm tra console nếu bạn chắc chắn có dữ liệu)</span></td></tr>';
                 return;
             }
 
@@ -245,7 +263,6 @@
         async function approveUser(email, key) {
             if(!confirm(`Duyệt quyền truy cập cho ${email}?`)) return;
             try {
-                // FIXED: Changed from /api/admin/approve to /admin/approve
                 const res = await fetch(`${HF_API_URL}/admin/approve`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -260,7 +277,6 @@
         async function deleteUser(email, key) {
             if(!confirm(`XÓA tài khoản ${email}? Hành động này không thể hoàn tác.`)) return;
             try {
-                // FIXED: Changed from /api/admin/delete to /admin/delete
                 const res = await fetch(`${HF_API_URL}/admin/delete`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
