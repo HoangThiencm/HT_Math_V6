@@ -3,211 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HT_MATH_WEB - Chuyển đổi thông minh</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+    <title>HT Math - AI Converter</title>
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
     
-    <!-- Fonts & Icons -->
+    <!-- Google Fonts: Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
     <link rel="stylesheet" href="styles.css">
     
-    <!-- Libs -->
+    <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 </head>
 <body>
+    <!-- Background Animation -->
+    <div class="bg-animation">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
     <div class="app-container">
-        <!-- PHẦN 1: MÀN HÌNH ĐĂNG NHẬP (Hiển thị mặc định) -->
-        <div id="authSection" class="auth-overlay">
-            <div class="auth-box glass-effect">
-                <div class="auth-brand">
-                    <div class="brand-logo"><i class="fa-solid fa-layer-group"></i></div>
+        
+        <!-- === AUTH SECTION (Overlay Login/Register) === -->
+        <div id="authSection" class="auth-wrapper fade-in">
+            <div class="glass-card auth-card">
+                <div class="card-header text-center">
+                    <div class="logo-glow">
+                        <i class="fa-solid fa-cube"></i>
+                    </div>
                     <h1>HT Math Web</h1>
-                    <p>Công cụ chuyển đổi Toán học chuyên nghiệp</p>
+                    <p class="subtitle">Chuyển đổi tài liệu thông minh</p>
                 </div>
 
-                <!-- Form Đăng Nhập -->
-                <div id="loginForm" class="auth-form-content">
+                <!-- Login Form -->
+                <div id="loginForm" class="auth-form">
                     <div class="input-group">
-                        <i class="fa-regular fa-envelope input-icon"></i>
-                        <input type="email" id="loginEmail" placeholder="Email đăng nhập" required>
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" id="loginEmail" placeholder="Email của bạn" required>
                     </div>
                     <div class="input-group">
-                        <i class="fa-solid fa-lock input-icon"></i>
+                        <i class="fa-solid fa-lock"></i>
                         <input type="password" id="loginPassword" placeholder="Mật khẩu" required>
                     </div>
-                    <button class="btn btn-primary btn-block" onclick="handleLogin()">
-                        Đăng nhập <i class="fa-solid fa-arrow-right"></i>
+                    <button class="btn btn-primary btn-glow btn-block" onclick="handleLogin()">
+                        Đăng Nhập <i class="fa-solid fa-arrow-right"></i>
                     </button>
-                    <!-- TUYỆT ĐỐI KHÔNG CÓ LINK ADMIN Ở ĐÂY -->
-                    <p class="auth-footer">
+                    
+                    <div class="divider"><span>hoặc</span></div>
+                    
+                    <p class="auth-switch">
                         Chưa có tài khoản? <a href="#" onclick="showRegister()">Đăng ký ngay</a>
                     </p>
                 </div>
 
-                <!-- Form Đăng Ký -->
-                <div id="registerForm" class="auth-form-content" style="display: none;">
+                <!-- Register Form -->
+                <div id="registerForm" class="auth-form" style="display: none;">
                     <div class="input-group">
-                        <i class="fa-regular fa-envelope input-icon"></i>
-                        <input type="email" id="registerEmail" placeholder="Email của bạn" required>
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" id="registerEmail" placeholder="Nhập email đăng ký" required>
                     </div>
                     <div class="input-group">
-                        <i class="fa-solid fa-lock input-icon"></i>
+                        <i class="fa-solid fa-lock"></i>
                         <input type="password" id="registerPassword" placeholder="Tạo mật khẩu" required>
                     </div>
-                    <button class="btn btn-success btn-block" onclick="handleRegister()">
-                        Đăng ký tài khoản
+                    <button class="btn btn-success btn-glow btn-block" onclick="handleRegister()">
+                        Tạo Tài Khoản
                     </button>
-                    <p class="auth-footer">Đã có tài khoản? <a href="#" onclick="showLogin()">Đăng nhập</a></p>
+                    
+                    <div class="divider"><span>hoặc</span></div>
+
+                    <p class="auth-switch">
+                        Đã có tài khoản? <a href="#" onclick="showLogin()">Quay lại đăng nhập</a>
+                    </p>
                 </div>
             </div>
-            <!-- Hiệu ứng nền -->
-            <div class="bg-blob blob-1"></div>
-            <div class="bg-blob blob-2"></div>
         </div>
 
-        <!-- PHẦN 2: ỨNG DỤNG CHÍNH (Ẩn mặc định) -->
-        <div id="mainApp" class="dashboard fade-in" style="display: none;">
-            <!-- Sidebar (Trái) -->
-            <aside class="sidebar glass-effect">
-                <div class="sidebar-header">
-                    <div class="logo-text"><i class="fa-solid fa-layer-group"></i> HT Math</div>
-                    <span class="badge-pro">V6.0</span>
-                </div>
-
-                <div class="sidebar-content">
-                    <div class="section-title">ĐẦU VÀO</div>
-                    
-                    <!-- Upload -->
-                    <div class="upload-widget">
-                        <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
-                            <div class="drop-icon-wrapper"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                            <h3>Tải tài liệu</h3>
-                            <p>PDF, PNG, JPG</p>
-                            <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.bmp" style="display: none;">
-                        </div>
-                        <div class="file-status">
-                            <input type="text" id="filePath" placeholder="Chưa chọn file..." readonly>
-                        </div>
-                        <div class="quick-actions-grid">
-                            <button class="btn-icon" onclick="handlePasteImage()" title="Dán ảnh (Ctrl+V)"><i class="fa-regular fa-clipboard"></i></button>
-                            <button class="btn-icon" onclick="handleScreenshot()" title="Chụp màn hình"><i class="fa-solid fa-camera"></i></button>
-                            <input type="file" id="screenshotInput" accept="image/*" capture="environment" style="display: none;">
-                        </div>
+        <!-- === MAIN APP SECTION === -->
+        <div id="mainApp" class="main-wrapper fade-in" style="display: none;">
+            <div class="glass-card main-card">
+                
+                <!-- Sidebar (Left Panel) -->
+                <aside class="sidebar">
+                    <div class="sidebar-header">
+                        <div class="app-logo"><i class="fa-solid fa-layer-group"></i> HT Math</div>
+                        <div class="version-badge">V6.0</div>
                     </div>
 
-                    <div class="divider"></div>
-
-                    <div class="section-title">CẤU HÌNH</div>
-                    <div class="settings-group">
-                        <label>AI Model</label>
-                        <select id="modelSelect" class="custom-select">
-                            <option value="gemini-3-flash-preview">Gemini 3.0 Flash</option>
-                            <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                        </select>
-                    </div>
-
-                    <div class="settings-group">
-                        <label>Chế độ xuất</label>
-                        <div class="toggle-group">
-                            <label class="toggle-option">
-                                <input type="radio" name="mode" value="latex" checked>
-                                <span class="toggle-btn">LaTeX</span>
-                            </label>
-                            <label class="toggle-option">
-                                <input type="radio" name="mode" value="text_only">
-                                <span class="toggle-btn">Text</span>
-                            </label>
+                    <div class="sidebar-content">
+                        <!-- File Upload -->
+                        <div class="section-label">ĐẦU VÀO</div>
+                        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                            <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.bmp" hidden>
+                            <div class="icon-circle"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                            <div class="upload-text">
+                                <strong>Chọn file</strong>
+                                <span>PDF, PNG, JPG</span>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="settings-group">
-                         <label class="checkbox-wrapper">
+                        <input type="text" id="filePath" class="file-path-input" placeholder="Chưa có file..." readonly>
+
+                        <div class="action-grid">
+                            <button class="btn btn-glass btn-sm" onclick="handlePasteImage()" title="Dán ảnh (Ctrl+V)">
+                                <i class="fa-regular fa-clipboard"></i> Dán
+                            </button>
+                            <button class="btn btn-glass btn-sm" onclick="handleScreenshot()" title="Chụp màn hình">
+                                <i class="fa-solid fa-camera"></i> Chụp
+                            </button>
+                            <input type="file" id="screenshotInput" accept="image/*" capture="environment" hidden>
+                        </div>
+
+                        <div class="separator"></div>
+
+                        <!-- Settings -->
+                        <div class="section-label">CẤU HÌNH</div>
+                        <div class="form-group">
+                            <label>Model AI</label>
+                            <div class="select-wrapper">
+                                <select id="modelSelect">
+                                    <option value="gemini-3-flash-preview">Gemini 3.0 Flash</option>
+                                    <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Chế độ</label>
+                            <div class="toggle-switch">
+                                <label>
+                                    <input type="radio" name="mode" value="latex" checked>
+                                    <span>LaTeX</span>
+                                </label>
+                                <label>
+                                    <input type="radio" name="mode" value="text_only">
+                                    <span>Text</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group checkbox-wrapper">
                             <input type="checkbox" id="keepImages" checked>
-                            <span class="checkmark"></span>
-                            Giữ hình vẽ (Word)
-                        </label>
-                    </div>
-                </div>
-
-                <div class="sidebar-footer">
-                    <button class="btn btn-primary btn-block btn-lg glow-effect" onclick="handleConvert()">
-                        <i class="fa-solid fa-bolt"></i> Chuyển đổi
-                    </button>
-                </div>
-            </aside>
-
-            <!-- Workspace (Phải) -->
-            <main class="main-workspace">
-                <header class="workspace-header">
-                    <div class="user-welcome">
-                        <div class="avatar"><i class="fa-solid fa-user"></i></div>
-                        <div class="user-meta">
-                            <span class="status-dot"></span>
-                            <span id="keyStatus">Sẵn sàng</span>
+                            <label for="keepImages">Giữ hình vẽ (Word)</label>
                         </div>
                     </div>
-                    <div class="header-actions">
-                        <button class="btn-ghost" onclick="showConfig()" title="Cài đặt API"><i class="fa-solid fa-gear"></i></button>
-                        <button class="btn-ghost text-danger" onclick="handleLogout()" title="Đăng xuất"><i class="fa-solid fa-right-from-bracket"></i></button>
-                    </div>
-                </header>
 
-                <div class="editor-container glass-effect">
-                    <div class="editor-toolbar">
-                        <div class="toolbar-left">
-                            <span class="tab active"><i class="fa-solid fa-code"></i> Kết quả</span>
+                    <div class="sidebar-footer">
+                        <button class="btn btn-primary btn-glow btn-lg btn-block" onclick="handleConvert()">
+                            <i class="fa-solid fa-bolt"></i> CHUYỂN ĐỔI
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- Editor (Right Panel) -->
+                <main class="editor-area">
+                    <header class="editor-header">
+                        <div class="user-status">
+                            <div class="avatar"><i class="fa-solid fa-user-astronaut"></i></div>
+                            <div class="status-info">
+                                <span class="status-dot online"></span>
+                                <span id="keyStatus">Sẵn sàng</span>
+                            </div>
                         </div>
-                        <div class="toolbar-right">
-                             <div class="progress-indicator">
+                        <div class="header-tools">
+                            <button class="btn-icon" onclick="showConfig()" title="Cài đặt"><i class="fa-solid fa-gear"></i></button>
+                            <button class="btn-icon danger" onclick="handleLogout()" title="Đăng xuất"><i class="fa-solid fa-power-off"></i></button>
+                        </div>
+                    </header>
+
+                    <div class="editor-content">
+                        <div class="editor-toolbar">
+                            <div class="tabs">
+                                <button class="tab active"><i class="fa-solid fa-code"></i> Kết quả</button>
+                            </div>
+                            <div class="progress-wrap">
                                 <div id="progressBar" class="progress-line">
-                                    <div id="progressFill" class="progress-fill"></div>
+                                    <div id="progressFill" class="fill"></div>
                                 </div>
                                 <span id="progressText">0%</span>
                             </div>
-                            <span id="statusLabel" class="status-text">Ready</span>
                         </div>
-                    </div>
-                    
-                    <div class="editor-body">
-                        <textarea id="resultText" class="code-editor" placeholder="// Kết quả chuyển đổi sẽ hiển thị tại đây..."></textarea>
+                        
+                        <div class="textarea-wrapper">
+                            <textarea id="resultText" placeholder="// Nội dung chuyển đổi sẽ xuất hiện tại đây..."></textarea>
+                        </div>
                     </div>
 
-                    <div class="editor-footer">
-                        <button class="btn-secondary" onclick="handleReset()">
-                            <i class="fa-solid fa-rotate-right"></i> Reset
-                        </button>
-                        <div class="export-group">
-                            <button class="btn-secondary" onclick="handleCopyText()"><i class="fa-regular fa-copy"></i> Copy</button>
-                            <button class="btn-outline" onclick="handleExportWord()">
-                                <i class="fa-solid fa-file-word"></i> Word
-                            </button>
-                            <button class="btn-outline" onclick="handleExportWordLatex()">
-                                <i class="fa-solid fa-file-code"></i> LaTeX
-                            </button>
+                    <footer class="editor-footer">
+                        <div class="left-actions">
+                            <button class="btn btn-glass" onclick="handleReset()"><i class="fa-solid fa-rotate-right"></i> Reset</button>
                         </div>
-                    </div>
-                </div>
-            </main>
+                        <div class="right-actions">
+                            <button class="btn btn-glass" onclick="handleCopyText()"><i class="fa-regular fa-copy"></i> Copy</button>
+                            <button class="btn btn-outline" onclick="handleExportWord()"><i class="fa-solid fa-file-word"></i> Word</button>
+                            <button class="btn btn-outline" onclick="handleExportWordLatex()"><i class="fa-solid fa-file-code"></i> LaTeX</button>
+                        </div>
+                    </footer>
+                </main>
+            </div>
         </div>
 
         <!-- Config Modal -->
         <div id="configModal" class="modal-backdrop">
-            <div class="modal-card">
+            <div class="glass-card modal-card">
                 <div class="modal-header">
-                    <h3>Cấu hình hệ thống</h3>
+                    <h3><i class="fa-solid fa-sliders"></i> Cài đặt hệ thống</h3>
                     <button class="close-btn" onclick="closeConfig()">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>API Endpoint (Backend URL)</label>
-                        <input type="text" id="apiEndpoint" class="form-input" placeholder="https://your-app.hf.space">
+                        <label>API Endpoint</label>
+                        <input type="text" id="apiEndpoint" class="glass-input" placeholder="https://your-app.hf.space">
                     </div>
                     <div class="form-group">
-                        <label>Luồng xử lý (Threads)</label>
-                        <select id="threadCount" class="form-select">
+                        <label>Số luồng xử lý (Threads)</label>
+                        <select id="threadCount" class="glass-input">
                             <option value="1">1 Thread</option>
                             <option value="3" selected>3 Threads</option>
                             <option value="5">5 Threads</option>
@@ -215,14 +233,15 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn-secondary" onclick="closeConfig()">Hủy</button>
-                    <button class="btn-primary" onclick="saveConfig()">Lưu thay đổi</button>
+                    <button class="btn btn-glass" onclick="closeConfig()">Đóng</button>
+                    <button class="btn btn-primary btn-glow" onclick="saveConfig()">Lưu thay đổi</button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Logic -->
+    </div> <!-- End App Container -->
+
+    <!-- Logic Script -->
     <script src="app.js"></script>
 </body>
 </html>
