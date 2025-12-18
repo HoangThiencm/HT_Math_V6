@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Quản Lý Người Dùng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-100 p-6 font-sans">
+
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-slate-800"><i class="fas fa-user-shield text-blue-600 mr-2"></i> Quản Trị Hệ Thống</h1>
+            <a href="index.html" class="text-slate-600 hover:text-blue-600 font-medium transition-colors">
+                <i class="fas fa-home mr-1"></i> Về Trang chủ
+            </a>
+        </div>
+
+        <!-- KHU VỰC ĐĂNG NHẬP ADMIN -->
+        <div id="loginSection" class="bg-white p-8 rounded-xl shadow-lg mb-6 max-w-lg mx-auto border border-slate-200">
+            <h2 class="text-xl font-bold text-slate-700 mb-4 text-center">Đăng nhập Quản trị viên</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Mã bảo mật (Secret Key)</label>
+                    <input type="password" id="adminKey" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="Nhập key (mặc định: admin123)...">
+                </div>
+                <button onclick="loadUsers()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-bold shadow-md transition-all transform active:scale-95">
+                    Truy cập Dashboard
+                </button>
+            </div>
+        </div>
+
+        <!-- KHU VỰC DASHBOARD (ẨN KHI CHƯA ĐĂNG NHẬP) -->
+        <div id="dashboardSection" class="hidden animate-fade-in-up">
+            
+            <!-- 1. THỐNG KÊ (STATISTICS) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Card Tổng -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm font-bold text-slate-400 uppercase">Tổng người dùng</p>
+                            <h3 id="statTotal" class="text-3xl font-bold text-slate-800 mt-1">0</h3>
+                        </div>
+                        <div class="bg-blue-100 p-3 rounded-full text-blue-600">
+                            <i class="fas fa-users text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Chờ duyệt -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-yellow-500">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm font-bold text-slate-400 uppercase">Chờ duyệt</p>
+                            <h3 id="statPending" class="text-3xl font-bold text-yellow-600 mt-1">0</h3>
+                        </div>
+                        <div class="bg-yellow-100 p-3 rounded-full text-yellow-600">
+                            <i class="fas fa-clock text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Hoạt động -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm font-bold text-slate-400 uppercase">Đang hoạt động</p>
+                            <h3 id="statActive" class="text-3xl font-bold text-green-600 mt-1">0</h3>
+                        </div>
+                        <div class="bg-green-100 p-3 rounded-full text-green-600">
+                            <i class="fas fa-check-circle text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. DANH SÁCH CHI TIẾT -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
+                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-700">Danh sách tài khoản</h3>
+                    <button onclick="loadUsers()" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        <i class="fas fa-sync-alt mr-1"></i> Làm mới
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Email đăng ký</th>
+                                <th class="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Trạng thái</th>
+                                <th class="px-6 py-3 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="bg-white divide-y divide-slate-200">
+                            <!-- Dữ liệu sẽ đổ vào đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === QUAN TRỌNG: Dán link Server Hugging Face của bạn vào đây ===
+        const HF_API_URL = "https://hoangthiencm-giangbai.hf.space"; 
+
+        async function loadUsers() {
+            const key = document.getElementById('adminKey').value;
+            if(!key) return alert("Vui lòng nhập Admin Key!");
+
+            // Hiệu ứng loading
+            document.body.style.cursor = 'wait';
+
+            try {
+                const res = await fetch(`${HF_API_URL}/admin/users`, {
+                    headers: { 'key': key }
+                });
+
+                if(!res.ok) throw new Error("Sai Key hoặc lỗi kết nối server!");
+                
+                const users = await res.json();
+                
+                // Cập nhật thống kê
+                updateStats(users);
+                
+                // Vẽ bảng
+                renderTable(users, key);
+                
+                // Hiển thị giao diện Dashboard, ẩn Login
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('dashboardSection').classList.remove('hidden');
+
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                document.body.style.cursor = 'default';
+            }
+        }
+
+        function updateStats(users) {
+            const total = users.length;
+            const pending = users.filter(u => u.status === 'pending').length;
+            const active = users.filter(u => u.status === 'active').length;
+
+            // Hiệu ứng đếm số
+            animateValue("statTotal", 0, total, 1000);
+            animateValue("statPending", 0, pending, 1000);
+            animateValue("statActive", 0, active, 1000);
+        }
+
+        function renderTable(users, key) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if(users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-slate-400 italic">Chưa có dữ liệu người dùng.</td></tr>';
+                return;
+            }
+
+            users.forEach(user => {
+                const isPending = user.status === 'pending';
+                
+                // Badge trạng thái
+                const statusBadge = isPending 
+                    ? '<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200"><i class="fas fa-hourglass-half mr-1"></i> Chờ duyệt</span>'
+                    : '<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 border border-green-200"><i class="fas fa-check mr-1"></i> Hoạt động</span>';
+                
+                // Nút Duyệt (Chỉ hiện nếu đang Pending)
+                const approveBtn = isPending 
+                    ? `<button onclick="approveUser('${user.email}', '${key}')" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded text-xs font-bold shadow transition mr-2">
+                        <i class="fas fa-check"></i> Duyệt
+                       </button>` 
+                    : '';
+                
+                // Nút Xóa (Luôn hiện)
+                const deleteBtn = `<button onclick="deleteUser('${user.email}', '${key}')" class="text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded text-xs font-bold shadow transition">
+                                    <i class="fas fa-trash-alt"></i> Xóa / Chặn
+                                   </button>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-700">
+                        <div class="flex items-center">
+                            <div class="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 mr-3">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            ${user.email}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">${statusBadge}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        ${approveBtn}
+                        ${deleteBtn}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function approveUser(email, key) {
+            if(!confirm(`Bạn muốn cấp quyền truy cập cho ${email}?`)) return;
+            try {
+                const res = await fetch(`${HF_API_URL}/admin/approve`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email: email, admin_key: key })
+                });
+                if(res.ok) {
+                    loadUsers(); // Tải lại để cập nhật số liệu
+                } else alert("Lỗi khi duyệt");
+            } catch(e) { alert("Lỗi kết nối"); }
+        }
+
+        async function deleteUser(email, key) {
+            if(!confirm(`CẢNH BÁO: Hành động này sẽ XÓA TÀI KHOẢN của ${email}.\n\nNgười dùng này sẽ không thể đăng nhập được nữa.`)) return;
+            try {
+                const res = await fetch(`${HF_API_URL}/admin/delete`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email: email, admin_key: key })
+                });
+                if(res.ok) {
+                    loadUsers(); // Tải lại để cập nhật số liệu
+                } else alert("Lỗi khi xóa");
+            } catch(e) { alert("Lỗi kết nối"); }
+        }
+
+        // Hiệu ứng con số chạy
+        function animateValue(id, start, end, duration) {
+            if (start === end) return;
+            const range = end - start;
+            let current = start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            const obj = document.getElementById(id);
+            const timer = setInterval(function() {
+                current += increment;
+                obj.innerHTML = current;
+                if (current == end) {
+                    clearInterval(timer);
+                }
+            }, stepTime);
+        }
+    </script>
+</body>
+</html>
