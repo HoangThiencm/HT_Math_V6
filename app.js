@@ -1,73 +1,70 @@
-// HT_MATH_WEB Frontend JavaScript
-// Tác giả: Hoàng Tấn Thiên
+// HT_MATH_WEB Frontend JavaScript v6.1 (Modern SPA Fix)
 
 // ===== CẤU HÌNH =====
-const DEFAULT_API_ENDPOINT = 'https://hoangthiencm-ht-math-web-backend.hf.space'; 
+const DEFAULT_API_ENDPOINT = 'https://hoangthiencm-giangbai.hf.space'; 
 let API_ENDPOINT = localStorage.getItem('apiEndpoint') || DEFAULT_API_ENDPOINT;
 let AUTH_TOKEN = localStorage.getItem('authToken') || null;
 let CURRENT_USER = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
 // ===== KHỞI TẠO =====
 document.addEventListener('DOMContentLoaded', () => {
+    // Chạy kiểm tra đăng nhập NGAY LẬP TỨC
     checkAuth();
+    
+    // Sau đó mới khởi tạo các thứ khác
     loadConfig();
     setupEventListeners();
-    loadModels();
+    
+    // Nếu đã đăng nhập thì mới load model để tránh lỗi mạng
+    if (AUTH_TOKEN) {
+        loadModels();
+    }
 });
 
 function setupEventListeners() {
     // File input change
-    document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) fileInput.addEventListener('change', handleFileSelect);
     
     // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.key === 'r') {
-            e.preventDefault();
-            handleConvert();
-        }
-        if (e.ctrlKey && e.key === 'k') {
-            e.preventDefault();
-            handleReset();
-        }
+        if (!AUTH_TOKEN) return; // Không cho dùng phím tắt nếu chưa login
+        
+        if (e.ctrlKey && e.key === 'r') { e.preventDefault(); handleConvert(); }
+        if (e.ctrlKey && e.key === 'k') { e.preventDefault(); handleReset(); }
         if (e.ctrlKey && e.key === 'v') {
-            // Handle paste in result textarea
-            if (document.activeElement.id === 'resultText') {
-                e.preventDefault();
-                handlePasteImage();
-            }
+            if (document.activeElement.id === 'resultText') { e.preventDefault(); handlePasteImage(); }
         }
     });
     
     // Paste image
     document.addEventListener('paste', (e) => {
+        if (!AUTH_TOKEN) return;
         if (e.clipboardData && e.clipboardData.items) {
             const items = Array.from(e.clipboardData.items);
             const imageItem = items.find(item => item.type.indexOf('image') !== -1);
-            if (imageItem) {
-                e.preventDefault();
-                handlePasteImage();
-            }
+            if (imageItem) { e.preventDefault(); handlePasteImage(); }
         }
     });
 }
 
-// ===== AUTHENTICATION =====
+// ===== AUTHENTICATION LOGIC (QUAN TRỌNG) =====
 function checkAuth() {
+    const authSection = document.getElementById('authSection');
+    const mainApp = document.getElementById('mainApp');
+
     if (AUTH_TOKEN && CURRENT_USER) {
-        showMainApp();
+        // Đã đăng nhập: Ẩn Login, Hiện App
+        authSection.style.display = 'none';
+        mainApp.style.display = 'grid'; // Dùng grid vì CSS dashboard là grid
+        
+        // Cập nhật email người dùng
+        updateStatus(`Xin chào, ${CURRENT_USER.email}`);
     } else {
-        showAuthSection();
+        // Chưa đăng nhập: Hiện Login (flex), Ẩn App
+        authSection.style.display = 'flex';
+        mainApp.style.display = 'none';
     }
-}
-
-function showAuthSection() {
-    document.getElementById('authSection').style.display = 'block';
-    document.getElementById('mainApp').style.display = 'none';
-}
-
-function showMainApp() {
-    document.getElementById('authSection').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
 }
 
 function showLogin() {
@@ -84,10 +81,13 @@ async function handleLogin() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     
-    if (!email || !password) {
-        alert('Vui lòng nhập đầy đủ thông tin');
-        return;
-    }
+    if (!email || !password) { alert('Vui lòng nhập đầy đủ thông tin'); return; }
+    
+    // Loading state
+    const btn = document.querySelector('#loginForm button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+    btn.disabled = true;
     
     try {
         const formData = new FormData();
@@ -106,13 +106,18 @@ async function handleLogin() {
             CURRENT_USER = { email: data.email };
             localStorage.setItem('authToken', AUTH_TOKEN);
             localStorage.setItem('currentUser', JSON.stringify(CURRENT_USER));
-            showMainApp();
-            updateStatus('Đăng nhập thành công');
+            
+            // Chuyển ngay vào app
+            checkAuth();
+            loadModels(); // Tải model sau khi login
         } else {
             alert('Đăng nhập thất bại: ' + (data.detail || data.message));
         }
     } catch (error) {
         alert('Lỗi đăng nhập: ' + error.message);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
 }
 
@@ -120,10 +125,11 @@ async function handleRegister() {
     const email = document.getElementById('registerEmail').value;
     const password = document.getElementById('registerPassword').value;
     
-    if (!email || !password) {
-        alert('Vui lòng nhập đầy đủ thông tin');
-        return;
-    }
+    if (!email || !password) { alert('Vui lòng nhập đầy đủ thông tin'); return; }
+    
+    const btn = document.querySelector('#registerForm button');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+    btn.disabled = true;
     
     try {
         const formData = new FormData();
@@ -138,14 +144,16 @@ async function handleRegister() {
         const data = await response.json();
         
         if (data.success) {
-            alert('Đăng ký thành công! Vui lòng đăng nhập.');
+            alert('Đăng ký thành công! Vui lòng chờ Admin duyệt và đăng nhập lại.');
             showLogin();
-            document.getElementById('loginEmail').value = email;
         } else {
             alert('Đăng ký thất bại: ' + (data.detail || data.message));
         }
     } catch (error) {
         alert('Lỗi đăng ký: ' + error.message);
+    } finally {
+        btn.innerHTML = 'Đăng ký tài khoản';
+        btn.disabled = false;
     }
 }
 
@@ -154,7 +162,7 @@ function handleLogout() {
     CURRENT_USER = null;
     localStorage.removeItem('authToken');
     localStorage.removeItem('currentUser');
-    showAuthSection();
+    checkAuth(); // Quay về màn hình login
 }
 
 // ===== CONFIG =====
@@ -172,39 +180,48 @@ function saveConfig() {
     localStorage.setItem('apiEndpoint', API_ENDPOINT);
     updateStatus('Đã lưu cấu hình');
     closeConfig();
+    // Reload lại trang để áp dụng
+    location.reload();
 }
 
 function loadConfig() {
     const saved = localStorage.getItem('apiEndpoint');
-    if (saved) {
-        API_ENDPOINT = saved;
-    }
+    if (saved) API_ENDPOINT = saved;
 }
 
 async function loadModels() {
     try {
         const response = await fetch(`${API_ENDPOINT}/api/models`);
+        if (!response.ok) throw new Error('API Error');
         const data = await response.json();
         
         const select = document.getElementById('modelSelect');
+        if (!select) return;
+        
         select.innerHTML = '';
-        data.models.forEach(model => {
+        const models = (data.models && data.models.length > 0) ? data.models : ['gemini-3-flash-preview', 'gemini-2.5-flash'];
+        
+        models.forEach(model => {
             const option = document.createElement('option');
             option.value = model;
             option.textContent = model;
             select.appendChild(option);
         });
     } catch (error) {
-        console.error('Lỗi tải models:', error);
+        console.warn('Không tải được model, dùng mặc định.');
+        const select = document.getElementById('modelSelect');
+        if (select) {
+            select.innerHTML = '<option value="gemini-3-flash-preview">Gemini 3.0 Flash</option>';
+        }
     }
 }
 
-// ===== FILE HANDLING =====
+// ===== FILE HANDLING & CONVERSION =====
 function handleFileSelect(e) {
     const file = e.target.files[0];
     if (file) {
         document.getElementById('filePath').value = file.name;
-        updateStatus(`Đã chọn file: ${file.name}`);
+        updateStatus(`Đã chọn: ${file.name}`);
     }
 }
 
@@ -214,55 +231,41 @@ async function handlePasteImage() {
         for (const item of items) {
             if (item.types.includes('image/png') || item.types.includes('image/jpeg')) {
                 const blob = await item.getType('image/png');
-                const file = new File([blob], 'pasted-image.png', { type: 'image/png' });
-                
-                // Tạo DataTransfer để set file vào input
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                document.getElementById('fileInput').files = dataTransfer.files;
-                
+                const file = new File([blob], 'pasted.png', { type: 'image/png' });
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                document.getElementById('fileInput').files = dt.files;
                 document.getElementById('filePath').value = 'Ảnh từ clipboard';
-                updateStatus('Đã dán ảnh từ clipboard');
+                updateStatus('Đã dán ảnh');
                 return;
             }
         }
-        alert('Clipboard không có dữ liệu ảnh');
-    } catch (error) {
-        console.error('Lỗi dán ảnh:', error);
-        alert('Lỗi dán ảnh: ' + error.message);
-    }
+        alert('Không tìm thấy ảnh trong clipboard');
+    } catch (e) { alert('Lỗi dán ảnh: ' + e.message); }
 }
 
 function handleScreenshot() {
-    const screenshotInput = document.getElementById('screenshotInput');
-    screenshotInput.onchange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            document.getElementById('fileInput').files = dataTransfer.files;
-            document.getElementById('filePath').value = 'Ảnh chụp màn hình';
-            updateStatus('Đã chọn ảnh chụp màn hình');
-        }
-    };
-    screenshotInput.click();
+    document.getElementById('screenshotInput').click();
 }
-
-// ===== CONVERSION =====
-async function handleConvert() {
-    const fileInput = document.getElementById('fileInput');
-    const file = fileInput.files[0];
-    
-    if (!file) {
-        alert('Vui lòng chọn file hoặc dán/chụp ảnh');
-        return;
+document.getElementById('screenshotInput').onchange = (e) => {
+    if (e.target.files[0]) {
+        const dt = new DataTransfer();
+        dt.items.add(e.target.files[0]);
+        document.getElementById('fileInput').files = dt.files;
+        document.getElementById('filePath').value = 'Ảnh chụp';
+        updateStatus('Đã chụp ảnh');
     }
+};
+
+async function handleConvert() {
+    const file = document.getElementById('fileInput').files[0];
+    if (!file) { alert('Vui lòng chọn file!'); return; }
     
     const model = document.getElementById('modelSelect').value;
     const mode = document.querySelector('input[name="mode"]:checked').value;
     
     updateStatus('Đang xử lý...');
-    updateProgress(0);
+    updateProgress(10);
     document.getElementById('resultText').value = '';
     
     try {
@@ -276,27 +279,24 @@ async function handleConvert() {
             body: formData
         });
         
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Lỗi xử lý file');
-        }
+        if (!response.ok) throw new Error('Lỗi từ Server');
         
         const data = await response.json();
-        
         if (data.success) {
             document.getElementById('resultText').value = data.result;
             updateProgress(100);
-            updateStatus(`Đã hoàn thành xử lý ${data.pages_processed} trang!`);
+            updateStatus(`Hoàn thành! (${data.pages_processed || 1} trang)`);
         } else {
-            throw new Error(data.message || 'Lỗi không xác định');
+            throw new Error(data.message);
         }
-    } catch (error) {
-        updateStatus('Lỗi: ' + error.message);
-        alert('Lỗi xử lý: ' + error.message);
+    } catch (e) {
+        updateStatus('Lỗi: ' + e.message);
+        alert('Lỗi xử lý: ' + e.message);
+        updateProgress(0);
     }
 }
 
-// ===== EXPORT =====
+// ===== UTILS =====
 function handleReset() {
     document.getElementById('fileInput').value = '';
     document.getElementById('filePath').value = '';
@@ -307,60 +307,28 @@ function handleReset() {
 
 function handleCopyText() {
     const text = document.getElementById('resultText').value;
-    if (!text.trim()) {
-        alert('Không có nội dung để copy');
-        return;
-    }
-    
-    navigator.clipboard.writeText(text).then(() => {
-        updateStatus('Đã copy văn bản vào clipboard!');
-        alert('Đã sao chép văn bản vào clipboard!');
-    }).catch(err => {
-        alert('Lỗi copy: ' + err.message);
-    });
+    if(text) navigator.clipboard.writeText(text);
+    updateStatus('Đã copy!');
 }
 
 async function handleExportWord() {
     const text = document.getElementById('resultText').value;
-    if (!text.trim()) {
-        alert('Không có nội dung để xuất');
-        return;
-    }
-    
-    // Tạo file Markdown tạm
+    if(!text) return;
     const blob = new Blob([text], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `converted_${Date.now()}.md`;
+    a.download = `convert_${Date.now()}.md`;
     a.click();
-    URL.revokeObjectURL(url);
-    
-    updateStatus('Đã tải file Markdown. Bạn có thể mở bằng Word hoặc Pandoc để chuyển sang DOCX.');
 }
 
 async function handleExportWordLatex() {
-    const text = document.getElementById('resultText').value;
-    if (!text.trim()) {
-        alert('Không có nội dung để xuất');
-        return;
-    }
-    
-    // Tạo file Markdown tạm
-    const blob = new Blob([text], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `latex_document_${Date.now()}.md`;
-    a.click();
-    URL.revokeObjectURL(url);
-    
-    updateStatus('Đã tải file Markdown. Bạn có thể mở bằng Word hoặc Pandoc để chuyển sang DOCX.');
+    handleExportWord(); // Tạm thời dùng chung logic export markdown
 }
 
-// ===== UI HELPERS =====
-function updateStatus(message) {
-    document.getElementById('statusLabel').textContent = message;
+function updateStatus(msg) {
+    const el = document.getElementById('keyStatus');
+    if(el) el.textContent = msg;
 }
 
 function updateProgress(percent) {
@@ -368,12 +336,7 @@ function updateProgress(percent) {
     document.getElementById('progressText').textContent = percent + '%';
 }
 
-// Close modal when clicking outside
+// Close modal click outside
 window.onclick = function(event) {
-    const modal = document.getElementById('configModal');
-    if (event.target === modal) {
-        closeConfig();
-    }
+    if (event.target === document.getElementById('configModal')) closeConfig();
 }
-
-
