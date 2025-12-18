@@ -71,21 +71,17 @@
             const tabLogin = document.getElementById('tabLogin');
             const tabRegister = document.getElementById('tabRegister');
             
-            // Lấy thẻ span (giờ sẽ luôn tìm thấy vì code đã fix)
             const btnSpan = document.querySelector('#submitBtn span');
-            
             const msg = document.getElementById('message');
             msg.classList.add('hidden'); 
 
             if(isLoginMode) {
                 tabLogin.className = "flex-1 py-2 text-blue-600 font-bold border-b-2 border-blue-600";
                 tabRegister.className = "flex-1 py-2 text-slate-500 font-medium hover:text-blue-500";
-                // Cập nhật text an toàn
                 if(btnSpan) btnSpan.textContent = "Đăng Nhập";
             } else {
                 tabRegister.className = "flex-1 py-2 text-blue-600 font-bold border-b-2 border-blue-600";
                 tabLogin.className = "flex-1 py-2 text-slate-500 font-medium hover:text-blue-500";
-                // Cập nhật text an toàn
                 if(btnSpan) btnSpan.textContent = "Đăng Ký Tài Khoản";
             }
         }
@@ -97,7 +93,6 @@
             const msg = document.getElementById('message');
             const btn = document.getElementById('submitBtn');
 
-            // Kiểm tra xem người dùng đã thay link API chưa
             if(HF_API_URL.includes("YOUR_HUGGINGFACE")) {
                 msg.textContent = "Lỗi: Bạn chưa thay link API thật vào file login.html!";
                 msg.className = "text-center text-sm mt-4 text-red-500 block";
@@ -105,12 +100,10 @@
             }
 
             btn.disabled = true;
-            
-            // [FIX] Luôn giữ thẻ <span> bao quanh icon loading để tránh lỗi [object Object] hoặc null khi querySelector
             btn.innerHTML = '<span><i class="fas fa-spinner fa-spin"></i> Đang xử lý...</span>';
 
-            // Tự động nhận diện endpoint (Backend v6.5 đã hỗ trợ cả 2 dạng đường dẫn)
-            const endpoint = isLoginMode ? "/login" : "/register";
+            // [FIX] Sửa đường dẫn thành /api/login và /api/register để khớp với app.py
+            const endpoint = isLoginMode ? "/api/login" : "/api/register";
             
             try {
                 const response = await fetch(`${HF_API_URL}${endpoint}`, {
@@ -127,11 +120,8 @@
                         localStorage.setItem('userEmail', email);
                         window.location.href = 'index.html';
                     } else {
-                        // Đăng ký thành công
                         msg.textContent = "Đăng ký thành công! Vui lòng chờ Admin duyệt tài khoản.";
                         msg.className = "text-center text-sm mt-4 text-yellow-600 bg-yellow-50 p-2 rounded block border border-yellow-200";
-                        
-                        // Chuyển tab về Login
                         switchTab('login');
                     }
                 } else {
@@ -145,7 +135,6 @@
                      msg.className = "text-center text-sm mt-4 text-red-500 block";
                 }
             } finally {
-                // Khôi phục lại nút bấm
                 msg.classList.remove('hidden');
                 btn.disabled = false;
                 btn.innerHTML = isLoginMode ? '<span>Đăng Nhập</span>' : '<span>Đăng Ký Tài Khoản</span>';
