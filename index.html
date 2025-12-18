@@ -20,6 +20,7 @@
 <body>
     <div class="app-container">
         <!-- AUTH SCREEN (Overlay) -->
+        <!-- Mặc định hiển thị lớp phủ này nếu chưa đăng nhập -->
         <div id="authSection" class="auth-overlay fade-in">
             <div class="auth-box glass-effect">
                 <div class="auth-brand">
@@ -41,10 +42,9 @@
                     <button class="btn btn-primary btn-block" onclick="handleLogin()">
                         Đăng nhập <i class="fa-solid fa-arrow-right"></i>
                     </button>
+                    <!-- Đã xóa link Admin Portal ở đây -->
                     <p class="auth-footer">
                         Chưa có tài khoản? <a href="#" onclick="showRegister()">Đăng ký ngay</a>
-                        <br>
-                        <a href="admin.html" class="text-xs text-muted mt-2 inline-block"><i class="fa-solid fa-user-shield"></i> Admin Portal</a>
                     </p>
                 </div>
 
@@ -70,6 +70,7 @@
         </div>
 
         <!-- MAIN DASHBOARD -->
+        <!-- Mặc định ẩn, chỉ hiện khi checkAuth() trong app.js xác nhận đã login -->
         <div id="mainApp" class="dashboard fade-in" style="display: none;">
             <!-- Sidebar (Left) -->
             <aside class="sidebar glass-effect">
