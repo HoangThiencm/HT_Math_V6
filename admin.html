@@ -218,7 +218,13 @@
                     body: JSON.stringify({ email: email, admin_key: key })
                 });
                 
-                const data = await res.json().catch(() => ({}));
+                let data = {};
+                try {
+                    data = await res.json();
+                } catch(e) {
+                    console.error('Failed to parse response:', e);
+                    data = { detail: `Lỗi ${res.status}: ${res.statusText}` };
+                }
                 
                 if(res.ok && data.success) {
                     // Thành công
@@ -228,7 +234,9 @@
                     // Lỗi từ server
                     const errorMsg = data.detail || data.message || `Lỗi ${res.status}: ${res.statusText}`;
                     alert(`❌ Lỗi khi duyệt: ${errorMsg}`);
-                    console.error('Approve error:', data);
+                    console.error('Approve error - Status:', res.status);
+                    console.error('Approve error - Response:', data);
+                    console.error('Approve error - Full response:', res);
                 }
             } catch(e) { 
                 alert(`❌ Lỗi kết nối: ${e.message}`);
