@@ -277,8 +277,25 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
+            // Cập nhật thông báo Empty State chi tiết hơn
             if(!users || users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-12 text-center text-slate-400 italic flex flex-col items-center justify-center"><i class="fas fa-inbox text-4xl mb-2"></i><br>Chưa có dữ liệu người dùng nào.<br><span class="text-xs text-slate-300 mt-2">(Kiểm tra phần Debug Log bên dưới)</span></td></tr>';
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-slate-400 italic">
+                            <div class="flex flex-col items-center justify-center">
+                                <i class="fas fa-inbox text-4xl mb-3 text-slate-300"></i>
+                                <span class="text-lg font-medium text-slate-500">Danh sách trống (0 Users)</span>
+                                <div class="mt-2 text-sm text-slate-400 max-w-md bg-slate-50 p-3 rounded border border-slate-200">
+                                    <p class="font-bold text-red-400 mb-1"><i class="fas fa-exclamation-triangle"></i> Tại sao tôi có data mà list lại trống?</p>
+                                    <ul class="list-disc text-left pl-5 space-y-1">
+                                        <li>Backend có thể đang đọc bảng <code>public.users</code> nhưng user lại nằm ở <code>auth.users</code>.</li>
+                                        <li>Backend đang kết nối sai Database (Ví dụ: kết nối Local thay vì Supabase Cloud).</li>
+                                        <li>Logic truy vấn của Backend đang lọc bỏ user (VD: chỉ hiện user 'active').</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>`;
                 return;
             }
 
@@ -313,61 +330,4 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">${createdDate}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center">${statusBadge}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        ${actionBtns}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        async function approveUser(email, key) {
-            if(!confirm(`Duyệt quyền truy cập cho ${email}?`)) return;
-            log(`Đang approve user: ${email}`);
-            try {
-                const res = await fetch(`${HF_API_URL}/admin/approve`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email: email, admin_key: key })
-                });
-                const text = await res.text();
-                log(`Approve Response (${res.status}): ${text}`);
-                
-                if(res.ok) {
-                    loadUsers(); 
-                } else alert("Lỗi khi duyệt! Xem log để biết chi tiết.");
-            } catch(e) { 
-                log(`Lỗi Approve: ${e.message}`);
-                alert("Lỗi kết nối: " + e.message); 
-            }
-        }
-
-        async function deleteUser(email, key) {
-            if(!confirm(`XÓA tài khoản ${email}? Hành động này không thể hoàn tác.`)) return;
-            log(`Đang delete user: ${email}`);
-            try {
-                const res = await fetch(`${HF_API_URL}/admin/delete`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ email: email, admin_key: key })
-                });
-                const text = await res.text();
-                log(`Delete Response (${res.status}): ${text}`);
-                
-                if(res.ok) {
-                    loadUsers(); 
-                } else alert("Lỗi khi xóa! Xem log để biết chi tiết.");
-            } catch(e) { 
-                log(`Lỗi Delete: ${e.message}`);
-                alert("Lỗi kết nối: " + e.message); 
-            }
-        }
-
-        function logoutAdmin() {
-            localStorage.removeItem('adminKey');
-            location.reload();
-        }
-    </script>
-</body>
-</html>
+                    <td class="px-6 py-4 whitespace
