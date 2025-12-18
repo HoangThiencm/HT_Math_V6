@@ -32,57 +32,19 @@
 
     <div class="app-container">
         
-        <!-- === AUTH SECTION (Overlay Login/Register) === -->
-        <div id="authSection" class="auth-wrapper fade-in">
+        <!-- === AUTH SECTION (Ẩn vì dùng login.html riêng) === -->
+        <div id="authSection" class="auth-wrapper fade-in" style="display: none;">
+            <!-- Form đăng nhập/đăng ký đã được chuyển sang login.html -->
             <div class="glass-card auth-card">
                 <div class="card-header text-center">
                     <div class="logo-glow">
                         <i class="fa-solid fa-cube"></i>
                     </div>
                     <h1>HT Math Web</h1>
-                    <p class="subtitle">Chuyển đổi tài liệu thông minh</p>
-                </div>
-
-                <!-- Login Form -->
-                <div id="loginForm" class="auth-form">
-                    <div class="input-group">
-                        <i class="fa-regular fa-envelope"></i>
-                        <input type="email" id="loginEmail" placeholder="Email của bạn" required>
-                    </div>
-                    <div class="input-group">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="loginPassword" placeholder="Mật khẩu" required>
-                    </div>
-                    <button class="btn btn-primary btn-glow btn-block" onclick="handleLogin()">
-                        Đăng Nhập <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                    
-                    <div class="divider"><span>hoặc</span></div>
-                    
-                    <p class="auth-switch">
-                        Chưa có tài khoản? <a href="#" onclick="showRegister()">Đăng ký ngay</a>
-                    </p>
-                </div>
-
-                <!-- Register Form -->
-                <div id="registerForm" class="auth-form" style="display: none;">
-                    <div class="input-group">
-                        <i class="fa-regular fa-envelope"></i>
-                        <input type="email" id="registerEmail" placeholder="Nhập email đăng ký" required>
-                    </div>
-                    <div class="input-group">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="registerPassword" placeholder="Tạo mật khẩu" required>
-                    </div>
-                    <button class="btn btn-success btn-glow btn-block" onclick="handleRegister()">
-                        Tạo Tài Khoản
-                    </button>
-                    
-                    <div class="divider"><span>hoặc</span></div>
-
-                    <p class="auth-switch">
-                        Đã có tài khoản? <a href="#" onclick="showLogin()">Quay lại đăng nhập</a>
-                    </p>
+                    <p class="subtitle">Vui lòng đăng nhập để tiếp tục</p>
+                    <a href="login.html" class="btn btn-primary btn-glow btn-block" style="margin-top: 20px;">
+                        Đi đến trang đăng nhập <i class="fa-solid fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </div>
