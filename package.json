@@ -1,0 +1,20 @@
+{
+  "name": "ht-math-web-frontend",
+  "version": "6.0.0",
+  "description": "Frontend cho HT_MATH_WEB - Chuyển đổi PDF/Ảnh sang Markdown với LaTeX",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "build": "echo 'No build step required'"
+  },
+  "keywords": [
+    "pdf",
+    "image",
+    "markdown",
+    "latex",
+    "converter"
+  ],
+  "author": "Hoàng Tấn Thiên",
+  "license": "MIT"
+}
+
