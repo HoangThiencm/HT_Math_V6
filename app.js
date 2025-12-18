@@ -2,7 +2,7 @@
 // Tác giả: Hoàng Tấn Thiên
 
 // ===== CẤU HÌNH =====
-const DEFAULT_API_ENDPOINT = 'https://your-app.hf.space'; // Thay bằng URL Hugging Face Space của bạn
+const DEFAULT_API_ENDPOINT = 'https://hoangthiencm-ht-math-web-backend.hf.space'; 
 let API_ENDPOINT = localStorage.getItem('apiEndpoint') || DEFAULT_API_ENDPOINT;
 let AUTH_TOKEN = localStorage.getItem('authToken') || null;
 let CURRENT_USER = JSON.parse(localStorage.getItem('currentUser') || 'null');
@@ -375,4 +375,5 @@ window.onclick = function(event) {
         closeConfig();
     }
 }
+
 
