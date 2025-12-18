@@ -4,6 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HT Math - AI Converter</title>
+    <!-- Redirect ngay nếu chưa đăng nhập - Script này chạy TRƯỚC khi render HTML -->
+    <script>
+        // Chạy ngay lập tức, không chờ DOM
+        (function() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const userEmail = localStorage.getItem('userEmail');
+                
+                // Nếu không có token hoặc email, redirect ngay
+                if (!token || !userEmail) {
+                    // Redirect ngay lập tức
+                    window.location.replace('login.html');
+                    return;
+                }
+                
+                // Nếu đã đăng nhập, đánh dấu body là authenticated
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.body.classList.add('authenticated');
+                });
+                
+                // Nếu DOM đã sẵn sàng, thêm class ngay
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.body.classList.add('authenticated');
+                    });
+                } else {
+                    document.body.classList.add('authenticated');
+                }
+            } catch(e) {
+                // Nếu có lỗi, vẫn redirect về login
+                window.location.replace('login.html');
+            }
+        })();
+    </script>
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
     
@@ -17,6 +51,18 @@
     
     <!-- CSS -->
     <link rel="stylesheet" href="styles.css">
+    <!-- Ẩn body cho đến khi xác nhận đã đăng nhập -->
+    <style>
+        body { 
+            visibility: hidden; 
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        body.authenticated {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
     
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
