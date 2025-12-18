@@ -8,6 +8,21 @@ let AUTH_TOKEN = localStorage.getItem('authToken') || null;
 let CURRENT_USER = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
 // ===== KHỞI TẠO =====
+// Kiểm tra auth ngay khi script load (trước khi DOM ready)
+(function() {
+    const token = localStorage.getItem('authToken');
+    const userEmail = localStorage.getItem('userEmail');
+    
+    // Nếu đang ở index.html hoặc root và chưa đăng nhập, redirect ngay
+    const currentPath = window.location.pathname;
+    const isIndexPage = currentPath.includes('index.html') || currentPath.endsWith('/') || currentPath === '/';
+    
+    if (isIndexPage && (!token || !userEmail)) {
+        window.location.href = 'login.html';
+        return; // Dừng lại, không chạy code phía dưới
+    }
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
     loadConfig();
@@ -63,11 +78,14 @@ function checkAuth() {
         showMainApp();
     } else {
         // Redirect về login.html nếu chưa đăng nhập
-        if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/')) {
+        const currentPath = window.location.pathname;
+        const isIndexPage = currentPath.includes('index.html') || currentPath.endsWith('/') || currentPath === '/';
+        
+        if (isIndexPage) {
             window.location.href = 'login.html';
-        } else {
-            showAuthSection();
+            return;
         }
+        showAuthSection();
     }
 }
 
