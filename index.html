@@ -3,253 +3,317 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HT Math - AI Converter</title>
-    <!-- Redirect ngay nếu chưa đăng nhập - Script này chạy TRƯỚC khi render HTML -->
-    <script>
-        // Chạy ngay lập tức, không chờ DOM
-        (function() {
-            try {
-                const token = localStorage.getItem('authToken');
-                const userEmail = localStorage.getItem('userEmail');
-                
-                // Nếu không có token hoặc email, redirect ngay
-                if (!token || !userEmail) {
-                    // Redirect ngay lập tức
-                    window.location.replace('login.html');
-                    return;
-                }
-                
-                // Nếu đã đăng nhập, đánh dấu body là authenticated
-                document.addEventListener('DOMContentLoaded', function() {
-                    document.body.classList.add('authenticated');
-                });
-                
-                // Nếu DOM đã sẵn sàng, thêm class ngay
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', function() {
-                        document.body.classList.add('authenticated');
-                    });
-                } else {
-                    document.body.classList.add('authenticated');
-                }
-            } catch(e) {
-                // Nếu có lỗi, vẫn redirect về login
-                window.location.replace('login.html');
-            }
-        })();
-    </script>
-    <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
-    
-    <!-- Google Fonts: Inter & JetBrains Mono -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- CSS -->
-    <link rel="stylesheet" href="styles.css">
-    <!-- Ẩn body cho đến khi xác nhận đã đăng nhập -->
-    <style>
-        body { 
-            visibility: hidden; 
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        body.authenticated {
-            visibility: visible;
-            opacity: 1;
-        }
-    </style>
-    
-    <!-- Libraries -->
+    <title>Chuyển đổi PDF/Ảnh - HT_Math_Web</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Tùy chỉnh thanh cuộn */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .group-box { border: 1px solid #e2e8f0; border-radius: 0.5rem; position: relative; margin-top: 1rem; padding: 1.5rem 1rem 1rem 1rem; background: white; }
+        .group-label { position: absolute; top: -0.75rem; left: 0.75rem; background: white; padding: 0 0.5rem; font-weight: bold; color: #475569; font-size: 0.875rem; }
+    </style>
 </head>
-<body>
-    <!-- Background Animation -->
-    <div class="bg-animation">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="blob blob-3"></div>
-    </div>
+<body class="bg-[#F0F2F5] text-slate-800 h-screen flex flex-col font-sans">
 
-    <div class="app-container">
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 text-white p-2 rounded-lg"><i class="fas fa-cube"></i></div>
+            <h1 class="font-bold text-lg hidden md:block">HT_Math Converter Web <span class="text-xs font-normal text-gray-500">v1.0</span></h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <span id="userEmail" class="text-sm font-medium text-slate-600">Đang tải...</span>
+            <button onclick="logout()" class="text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-md text-sm transition font-medium">
+                <i class="fas fa-sign-out-alt mr-1"></i> Đăng xuất
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-hidden flex flex-col md:flex-row gap-4 p-4 max-w-7xl mx-auto w-full">
         
-        <!-- === AUTH SECTION (Ẩn vì dùng login.html riêng) === -->
-        <div id="authSection" class="auth-wrapper fade-in" style="display: none;">
-            <!-- Form đăng nhập/đăng ký đã được chuyển sang login.html -->
-            <div class="glass-card auth-card">
-                <div class="card-header text-center">
-                    <div class="logo-glow">
-                        <i class="fa-solid fa-cube"></i>
+        <!-- Left Panel: Controls -->
+        <div class="w-full md:w-1/3 flex flex-col gap-2 overflow-y-auto pr-2">
+            
+            <!-- Group: Đầu vào -->
+            <div class="group-box shadow-sm">
+                <span class="group-label">Đầu vào</span>
+                <div class="space-y-3">
+                    <!-- File Input -->
+                    <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-slate-50" id="dropZone">
+                        <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="handleFileSelect(this)">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-sm text-gray-500">Kéo thả ảnh hoặc <span class="text-blue-600 font-bold">Chọn file</span></p>
+                        <p class="text-xs text-gray-400 mt-1">(Hỗ trợ: PNG, JPG, JPEG)</p>
                     </div>
-                    <h1>HT Math Web</h1>
-                    <p class="subtitle">Vui lòng đăng nhập để tiếp tục</p>
-                    <a href="login.html" class="btn btn-primary btn-glow btn-block" style="margin-top: 20px;">
-                        Đi đến trang đăng nhập <i class="fa-solid fa-arrow-right"></i>
-                    </a>
+
+                    <!-- Paste Clipboard -->
+                    <button onclick="pasteFromClipboard()" class="w-full border border-gray-300 bg-white hover:bg-gray-50 text-slate-700 py-2 rounded flex items-center justify-center gap-2 transition">
+                        <i class="fas fa-paste"></i> Dán ảnh từ Clipboard (Ctrl+V)
+                    </button>
+                    
+                    <!-- Preview Image Thumbnail -->
+                    <div id="imagePreviewContainer" class="hidden relative mt-2">
+                        <img id="imagePreview" class="w-full h-48 object-contain rounded border border-gray-200 bg-gray-100">
+                        <button onclick="clearImage()" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-red-600">&times;</button>
+                        <p id="fileInfo" class="text-xs text-center text-gray-500 mt-1"></p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- === MAIN APP SECTION === -->
-        <div id="mainApp" class="main-wrapper fade-in" style="display: none;">
-            <div class="glass-card main-card">
-                
-                <!-- Sidebar (Left Panel) -->
-                <aside class="sidebar">
-                    <div class="sidebar-header">
-                        <div class="app-logo"><i class="fa-solid fa-layer-group"></i> HT Math</div>
-                        <div class="version-badge">V6.0</div>
-                    </div>
-
-                    <div class="sidebar-content">
-                        <!-- File Upload -->
-                        <div class="section-label">ĐẦU VÀO</div>
-                        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
-                            <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.bmp" hidden>
-                            <div class="icon-circle"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                            <div class="upload-text">
-                                <strong>Chọn file</strong>
-                                <span>PDF, PNG, JPG</span>
-                            </div>
-                        </div>
-                        <input type="text" id="filePath" class="file-path-input" placeholder="Chưa có file..." readonly>
-
-                        <div class="action-grid">
-                            <button class="btn btn-glass btn-sm" onclick="handlePasteImage()" title="Dán ảnh (Ctrl+V)">
-                                <i class="fa-regular fa-clipboard"></i> Dán
-                            </button>
-                            <button class="btn btn-glass btn-sm" onclick="handleScreenshot()" title="Chụp màn hình">
-                                <i class="fa-solid fa-camera"></i> Chụp
-                            </button>
-                            <input type="file" id="screenshotInput" accept="image/*" capture="environment" hidden>
-                        </div>
-
-                        <div class="separator"></div>
-
-                        <!-- Settings -->
-                        <div class="section-label">CẤU HÌNH</div>
-                        <div class="form-group">
-                            <label>Model AI</label>
-                            <div class="select-wrapper">
-                                <select id="modelSelect">
-                                    <option value="gemini-3-flash-preview">Gemini 3.0 Flash</option>
-                                    <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                                </select>
-                                <i class="fa-solid fa-chevron-down"></i>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Chế độ</label>
-                            <div class="toggle-switch">
-                                <label>
-                                    <input type="radio" name="mode" value="latex" checked>
-                                    <span>LaTeX</span>
-                                </label>
-                                <label>
-                                    <input type="radio" name="mode" value="text_only">
-                                    <span>Text</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="form-group checkbox-wrapper">
-                            <input type="checkbox" id="keepImages" checked>
-                            <label for="keepImages">Giữ hình vẽ (Word)</label>
-                        </div>
-                    </div>
-
-                    <div class="sidebar-footer">
-                        <button class="btn btn-primary btn-glow btn-lg btn-block" onclick="handleConvert()">
-                            <i class="fa-solid fa-bolt"></i> CHUYỂN ĐỔI
-                        </button>
-                    </div>
-                </aside>
-
-                <!-- Editor (Right Panel) -->
-                <main class="editor-area">
-                    <header class="editor-header">
-                        <div class="user-status">
-                            <div class="avatar"><i class="fa-solid fa-user-astronaut"></i></div>
-                            <div class="status-info">
-                                <span class="status-dot online"></span>
-                                <span id="keyStatus">Sẵn sàng</span>
-                            </div>
-                        </div>
-                        <div class="header-tools">
-                            <button class="btn-icon" onclick="showConfig()" title="Cài đặt"><i class="fa-solid fa-gear"></i></button>
-                            <button class="btn-icon danger" onclick="handleLogout()" title="Đăng xuất"><i class="fa-solid fa-power-off"></i></button>
-                        </div>
-                    </header>
-
-                    <div class="editor-content">
-                        <div class="editor-toolbar">
-                            <div class="tabs">
-                                <button class="tab active"><i class="fa-solid fa-code"></i> Kết quả</button>
-                            </div>
-                            <div class="progress-wrap">
-                                <div id="progressBar" class="progress-line">
-                                    <div id="progressFill" class="fill"></div>
-                                </div>
-                                <span id="progressText">0%</span>
-                            </div>
-                        </div>
-                        
-                        <div class="textarea-wrapper">
-                            <textarea id="resultText" placeholder="// Nội dung chuyển đổi sẽ xuất hiện tại đây..."></textarea>
-                        </div>
-                    </div>
-
-                    <footer class="editor-footer">
-                        <div class="left-actions">
-                            <button class="btn btn-glass" onclick="handleReset()"><i class="fa-solid fa-rotate-right"></i> Reset</button>
-                        </div>
-                        <div class="right-actions">
-                            <button class="btn btn-glass" onclick="handleCopyText()"><i class="fa-regular fa-copy"></i> Copy</button>
-                            <button class="btn btn-outline" onclick="handleExportWord()"><i class="fa-solid fa-file-word"></i> Word</button>
-                            <button class="btn btn-outline" onclick="handleExportWordLatex()"><i class="fa-solid fa-file-code"></i> LaTeX</button>
-                        </div>
-                    </footer>
-                </main>
-            </div>
-        </div>
-
-        <!-- Config Modal -->
-        <div id="configModal" class="modal-backdrop">
-            <div class="glass-card modal-card">
-                <div class="modal-header">
-                    <h3><i class="fa-solid fa-sliders"></i> Cài đặt hệ thống</h3>
-                    <button class="close-btn" onclick="closeConfig()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>API Endpoint</label>
-                        <input type="text" id="apiEndpoint" class="glass-input" placeholder="https://your-app.hf.space">
-                    </div>
-                    <div class="form-group">
-                        <label>Số luồng xử lý (Threads)</label>
-                        <select id="threadCount" class="glass-input">
-                            <option value="1">1 Thread</option>
-                            <option value="3" selected>3 Threads</option>
-                            <option value="5">5 Threads</option>
+            <!-- Group: Tùy chọn -->
+            <div class="group-box shadow-sm">
+                <span class="group-label">Tùy chọn chuyển đổi</span>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Model:</label>
+                        <select id="modelSelect" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="gemini-1.5-flash">gemini-1.5-flash (Nhanh)</option>
+                            <option value="gemini-1.5-pro">gemini-1.5-pro (Chính xác cao)</option>
+                            <option value="gemini-2.0-flash-exp">gemini-2.0-flash-exp (Mới nhất)</option>
                         </select>
                     </div>
+                    
+                    <div class="flex gap-4">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="mode" value="latex" checked class="text-blue-600 focus:ring-blue-500">
+                            <span class="ml-2 text-sm">Chuyển đổi LaTeX</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="mode" value="text" class="text-blue-600 focus:ring-blue-500">
+                            <span class="ml-2 text-sm">Văn bản thuần</span>
+                        </label>
+                    </div>
+
+                    <button id="btnConvert" onclick="startConversion()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded shadow transition flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                        <i class="fas fa-play"></i> Thực hiện
+                    </button>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-glass" onclick="closeConfig()">Đóng</button>
-                    <button class="btn btn-primary btn-glow" onclick="saveConfig()">Lưu thay đổi</button>
+            </div>
+            
+            <!-- Link Admin -->
+            <div class="text-center mt-4">
+                 <a href="admin.html" class="text-xs text-blue-500 hover:underline">Trang quản trị (Admin)</a>
+            </div>
+
+        </div>
+
+        <!-- Right Panel: Result -->
+        <div class="w-full md:w-2/3 flex flex-col h-full">
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col h-full overflow-hidden">
+                <!-- Toolbar Result -->
+                <div class="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
+                    <span class="font-bold text-gray-700 text-sm">Kết quả</span>
+                    <div class="flex gap-2">
+                        <button onclick="copyText()" class="text-slate-600 hover:text-blue-600 text-sm px-2 py-1 rounded hover:bg-gray-200 transition" title="Copy">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                        <button onclick="downloadWord()" class="text-slate-600 hover:text-blue-600 text-sm px-2 py-1 rounded hover:bg-gray-200 transition" title="Xuất Word">
+                            <i class="fas fa-file-word"></i> Xuất Word
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Editor/Preview Area -->
+                <div class="flex-1 relative">
+                    <!-- Loading Overlay -->
+                    <div id="loadingOverlay" class="absolute inset-0 bg-white bg-opacity-90 flex flex-col items-center justify-center z-10 hidden">
+                        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-3"></div>
+                        <p class="text-sm text-blue-600 font-medium animate-pulse">Đang xử lý với Gemini AI...</p>
+                    </div>
+                    
+                    <div class="flex h-full">
+                        <!-- Raw Text (Editable) -->
+                        <textarea id="resultText" class="w-1/2 h-full p-4 resize-none outline-none font-mono text-sm border-r border-gray-200 focus:bg-blue-50 transition" placeholder="Kết quả Markdown sẽ hiện ở đây..."></textarea>
+                        <!-- Preview -->
+                        <div id="markdownPreview" class="w-1/2 h-full p-4 overflow-y-auto prose prose-sm max-w-none bg-white">
+                            <p class="text-gray-400 italic text-center mt-10">Bản xem trước</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-    </div> <!-- End App Container -->
+    <script>
+        // === CẤU HÌNH API ===
+        // Thay link này bằng Link Hugging Face Space của bạn sau khi deploy xong Backend
+        const API_BASE_URL = "https://hoangthiencm-giangbai.hf.space"; 
 
-    <!-- Logic Script -->
-    <script src="app.js"></script>
+        // --- AUTH CHECK ---
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('userEmail').textContent = localStorage.getItem('userEmail') || 'User';
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // --- FILE HANDLING ---
+        let currentFile = null;
+
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-blue-500', 'bg-blue-50');
+        });
+        
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+            if (e.dataTransfer.files.length) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Xử lý Paste (Ctrl+V)
+        window.addEventListener('paste', (e) => {
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            for (const item of items) {
+                if (item.type.indexOf('image') !== -1) {
+                    const blob = item.getAsFile();
+                    handleFile(blob);
+                }
+            }
+        });
+
+        function pasteFromClipboard() {
+            navigator.clipboard.read().then(items => {
+                for (const item of items) {
+                    if (item.types.includes('image/png') || item.types.includes('image/jpeg')) {
+                        item.getType('image/png').then(blob => handleFile(blob));
+                        break;
+                    }
+                }
+            }).catch(err => alert("Vui lòng cho phép truy cập clipboard hoặc nhấn Ctrl+V."));
+        }
+
+        function handleFileSelect(input) {
+            if (input.files.length) handleFile(input.files[0]);
+        }
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert("Chỉ hỗ trợ file ảnh!");
+                return;
+            }
+            currentFile = file;
+            
+            // Preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('imagePreview').src = e.target.result;
+                document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                document.getElementById('dropZone').classList.add('hidden');
+                document.getElementById('fileInfo').textContent = `File: ${file.name || "Clipboard Image"} (${(file.size/1024).toFixed(1)} KB)`;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearImage() {
+            currentFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('imagePreviewContainer').classList.add('hidden');
+            document.getElementById('dropZone').classList.remove('hidden');
+        }
+
+        // --- CORE LOGIC ---
+        async function startConversion() {
+            if (!currentFile) return alert("Vui lòng chọn hoặc dán ảnh trước!");
+
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            const model = document.getElementById('modelSelect').value;
+            const btn = document.getElementById('btnConvert');
+            const loading = document.getElementById('loadingOverlay');
+
+            btn.disabled = true;
+            loading.classList.remove('hidden');
+
+            const formData = new FormData();
+            formData.append('file', currentFile);
+            formData.append('mode', mode);
+            formData.append('model', model);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/process`, {
+                    method: 'POST',
+                    headers: {
+                        // Không cần Authorization cho endpoint process trong trường hợp này 
+                        // nhưng nếu muốn bảo mật thì thêm vào Header ở Backend
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error("Lỗi Server hoặc Model quá tải.");
+
+                const data = await response.json();
+                const text = data.text;
+
+                document.getElementById('resultText').value = text;
+                renderMarkdown(text);
+
+            } catch (error) {
+                alert("Lỗi: " + error.message);
+            } finally {
+                btn.disabled = false;
+                loading.classList.add('hidden');
+            }
+        }
+
+        // Render Markdown & LaTeX Preview
+        const resultText = document.getElementById('resultText');
+        const markdownPreview = document.getElementById('markdownPreview');
+
+        resultText.addEventListener('input', () => renderMarkdown(resultText.value));
+
+        function renderMarkdown(text) {
+            // Dùng marked để parse HTML
+            markdownPreview.innerHTML = marked.parse(text);
+            // Ở đây nếu muốn hiển thị công thức đẹp, bạn cần thêm thư viện MathJax 
+            // và gọi MathJax.typeset()
+        }
+
+        function copyText() {
+            const text = document.getElementById('resultText').value;
+            navigator.clipboard.writeText(text).then(() => alert("Đã copy!"));
+        }
+        
+        function downloadWord() {
+            const text = document.getElementById('resultText').value;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "ket_qua.md"; // Tạm thời tải Markdown, muốn Docx cần thư viện nặng hơn client-side
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+    
+    <!-- Script hỗ trợ MathJax để hiển thị công thức nếu cần -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
 </body>
 </html>
