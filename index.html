@@ -19,9 +19,8 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- AUTH SCREEN (Overlay) -->
-        <!-- Mặc định hiển thị lớp phủ này nếu chưa đăng nhập -->
-        <div id="authSection" class="auth-overlay fade-in">
+        <!-- PHẦN 1: MÀN HÌNH ĐĂNG NHẬP (Hiển thị mặc định) -->
+        <div id="authSection" class="auth-overlay">
             <div class="auth-box glass-effect">
                 <div class="auth-brand">
                     <div class="brand-logo"><i class="fa-solid fa-layer-group"></i></div>
@@ -29,7 +28,7 @@
                     <p>Công cụ chuyển đổi Toán học chuyên nghiệp</p>
                 </div>
 
-                <!-- Login Form -->
+                <!-- Form Đăng Nhập -->
                 <div id="loginForm" class="auth-form-content">
                     <div class="input-group">
                         <i class="fa-regular fa-envelope input-icon"></i>
@@ -42,13 +41,13 @@
                     <button class="btn btn-primary btn-block" onclick="handleLogin()">
                         Đăng nhập <i class="fa-solid fa-arrow-right"></i>
                     </button>
-                    <!-- Đã xóa link Admin Portal ở đây -->
+                    <!-- TUYỆT ĐỐI KHÔNG CÓ LINK ADMIN Ở ĐÂY -->
                     <p class="auth-footer">
                         Chưa có tài khoản? <a href="#" onclick="showRegister()">Đăng ký ngay</a>
                     </p>
                 </div>
 
-                <!-- Register Form -->
+                <!-- Form Đăng Ký -->
                 <div id="registerForm" class="auth-form-content" style="display: none;">
                     <div class="input-group">
                         <i class="fa-regular fa-envelope input-icon"></i>
@@ -64,15 +63,14 @@
                     <p class="auth-footer">Đã có tài khoản? <a href="#" onclick="showLogin()">Đăng nhập</a></p>
                 </div>
             </div>
-            <!-- Background Decorations -->
+            <!-- Hiệu ứng nền -->
             <div class="bg-blob blob-1"></div>
             <div class="bg-blob blob-2"></div>
         </div>
 
-        <!-- MAIN DASHBOARD -->
-        <!-- Mặc định ẩn, chỉ hiện khi checkAuth() trong app.js xác nhận đã login -->
+        <!-- PHẦN 2: ỨNG DỤNG CHÍNH (Ẩn mặc định) -->
         <div id="mainApp" class="dashboard fade-in" style="display: none;">
-            <!-- Sidebar (Left) -->
+            <!-- Sidebar (Trái) -->
             <aside class="sidebar glass-effect">
                 <div class="sidebar-header">
                     <div class="logo-text"><i class="fa-solid fa-layer-group"></i> HT Math</div>
@@ -82,7 +80,7 @@
                 <div class="sidebar-content">
                     <div class="section-title">ĐẦU VÀO</div>
                     
-                    <!-- Upload Area -->
+                    <!-- Upload -->
                     <div class="upload-widget">
                         <div class="drop-zone" onclick="document.getElementById('fileInput').click()">
                             <div class="drop-icon-wrapper"><i class="fa-solid fa-cloud-arrow-up"></i></div>
@@ -141,7 +139,7 @@
                 </div>
             </aside>
 
-            <!-- Main Workspace (Right) -->
+            <!-- Workspace (Phải) -->
             <main class="main-workspace">
                 <header class="workspace-header">
                     <div class="user-welcome">
