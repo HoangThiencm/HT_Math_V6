@@ -1,5 +1,18 @@
 {
-  "version": 2,
-  "cleanUrls": true,
-  "trailingSlash": false
+  "name": "ht-math-web-frontend",
+  "version": "6.0.0",
+  "description": "Frontend cho HT_MATH_WEB",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": [
+    "pdf",
+    "image",
+    "markdown",
+    "latex",
+    "converter"
+  ],
+  "author": "Hoàng Tấn Thiên",
+  "license": "MIT"
 }
