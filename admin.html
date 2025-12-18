@@ -204,30 +204,80 @@
 
         async function approveUser(email, key) {
             if(!confirm(`Bạn muốn cấp quyền truy cập cho ${email}?`)) return;
+            
+            // Hiển thị loading
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+            
             try {
                 const res = await fetch(`${HF_API_URL}/admin/approve`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ email: email, admin_key: key })
                 });
-                if(res.ok) {
+                
+                const data = await res.json().catch(() => ({}));
+                
+                if(res.ok && data.success) {
+                    // Thành công
+                    alert(`✅ ${data.message || 'Đã kích hoạt tài khoản thành công!'}`);
                     loadUsers(); // Tải lại để cập nhật số liệu
-                } else alert("Lỗi khi duyệt");
-            } catch(e) { alert("Lỗi kết nối"); }
+                } else {
+                    // Lỗi từ server
+                    const errorMsg = data.detail || data.message || `Lỗi ${res.status}: ${res.statusText}`;
+                    alert(`❌ Lỗi khi duyệt: ${errorMsg}`);
+                    console.error('Approve error:', data);
+                }
+            } catch(e) { 
+                alert(`❌ Lỗi kết nối: ${e.message}`);
+                console.error('Network error:', e);
+            } finally {
+                // Khôi phục button
+                if(btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            }
         }
 
         async function deleteUser(email, key) {
             if(!confirm(`CẢNH BÁO: Hành động này sẽ XÓA TÀI KHOẢN của ${email}.\n\nNgười dùng này sẽ không thể đăng nhập được nữa.`)) return;
+            
+            // Hiển thị loading
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xóa...';
+            
             try {
                 const res = await fetch(`${HF_API_URL}/admin/delete`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ email: email, admin_key: key })
                 });
-                if(res.ok) {
+                
+                const data = await res.json().catch(() => ({}));
+                
+                if(res.ok && data.success) {
+                    alert(`✅ ${data.message || 'Đã xóa tài khoản thành công!'}`);
                     loadUsers(); // Tải lại để cập nhật số liệu
-                } else alert("Lỗi khi xóa");
-            } catch(e) { alert("Lỗi kết nối"); }
+                } else {
+                    const errorMsg = data.detail || data.message || `Lỗi ${res.status}: ${res.statusText}`;
+                    alert(`❌ Lỗi khi xóa: ${errorMsg}`);
+                    console.error('Delete error:', data);
+                }
+            } catch(e) { 
+                alert(`❌ Lỗi kết nối: ${e.message}`);
+                console.error('Network error:', e);
+            } finally {
+                // Khôi phục button
+                if(btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            }
         }
 
         // Hiệu ứng con số chạy
