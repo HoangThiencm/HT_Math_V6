@@ -62,7 +62,7 @@
 
     <script>
         // === QUAN TRỌNG: Hãy dán link Server Hugging Face của bạn vào đây ===
-        const HF_API_URL = "https://hoangthiencm-giangbai.hf.space"; 
+        const HF_API_URL = "https://hoangthiencm-ht-math-web-backend.hf.space"; 
 
         let isLoginMode = true;
 
@@ -108,36 +108,47 @@
             // Lúc này nút bấm biến thành icon xoay, thẻ span chứa chữ bị mất tạm thời
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-            const endpoint = isLoginMode ? "/login" : "/register";
+            const endpoint = isLoginMode ? "/api/login" : "/api/register";
             
             try {
+                // Sử dụng FormData cho backend FastAPI
+                const formData = new FormData();
+                formData.append('email', email);
+                formData.append('password', password);
+                
                 const response = await fetch(`${HF_API_URL}${endpoint}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: formData
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
                     if (isLoginMode) {
-                        localStorage.setItem('authToken', data.token);
-                        localStorage.setItem('userEmail', email);
-                        window.location.href = 'index.html';
+                        if (data.success) {
+                            localStorage.setItem('authToken', data.token);
+                            localStorage.setItem('userEmail', email);
+                            window.location.href = 'index.html';
+                        } else {
+                            throw new Error(data.detail || "Đăng nhập thất bại");
+                        }
                     } else {
                         // Đăng ký thành công
-                        msg.textContent = "Đăng ký thành công! Vui lòng chờ Admin duyệt tài khoản.";
+                        msg.textContent = data.message || "Đăng ký thành công! Vui lòng chờ Admin duyệt tài khoản.";
                         msg.className = "text-center text-sm mt-4 text-yellow-600 bg-yellow-50 p-2 rounded block border border-yellow-200";
                         
-                        // Chuyển tab về Login (Code mới đã an toàn, không còn lỗi null)
+                        // Chuyển tab về Login
                         switchTab('login');
                     }
                 } else {
-                    throw new Error(data.detail || "Có lỗi xảy ra");
+                    // Xử lý lỗi từ backend
+                    const errorMsg = data.detail || "Có lỗi xảy ra";
+                    throw new Error(errorMsg);
                 }
             } catch (err) {
                 msg.textContent = err.message;
-                if(err.message.includes("chưa được kích hoạt")) {
+                // Kiểm tra nếu là lỗi chưa kích hoạt hoặc 403
+                if(err.message.includes("chưa được kích hoạt") || err.message.includes("kích hoạt")) {
                      msg.className = "text-center text-sm mt-4 text-yellow-700 bg-yellow-50 p-2 rounded block border border-yellow-200";
                 } else {
                      msg.className = "text-center text-sm mt-4 text-red-500 block";
