@@ -24,7 +24,7 @@
             <div class="inline-block p-3 rounded-full bg-blue-600 text-white mb-3">
                 <i class="fas fa-robot text-3xl"></i>
             </div>
-            <h2 class="text-2xl font-bold text-slate-800">CHUYỂN PDF SANG WORD</h2>
+            <h2 class="text-2xl font-bold text-slate-800">Trợ Lý Dạy học</h2>
             <p class="text-slate-500 text-sm">Vui lòng đăng nhập để tiếp tục</p>
         </div>
 
@@ -62,7 +62,7 @@
 
     <script>
         // === QUAN TRỌNG: Hãy dán link Server Hugging Face của bạn vào đây ===
-        const HF_API_URL = "https://hoangthiencm-ht-math-web-backend.hf.space"; 
+        const HF_API_URL = "https://hoangthiencm-giangbai.hf.space"; 
 
         let isLoginMode = true;
 
@@ -71,7 +71,7 @@
             const tabLogin = document.getElementById('tabLogin');
             const tabRegister = document.getElementById('tabRegister');
             
-            // FIX LỖI NULL: Kiểm tra xem thẻ span có tồn tại không trước khi đổi chữ
+            // Lấy thẻ span (giờ sẽ luôn tìm thấy vì code đã fix)
             const btnSpan = document.querySelector('#submitBtn span');
             
             const msg = document.getElementById('message');
@@ -80,12 +80,12 @@
             if(isLoginMode) {
                 tabLogin.className = "flex-1 py-2 text-blue-600 font-bold border-b-2 border-blue-600";
                 tabRegister.className = "flex-1 py-2 text-slate-500 font-medium hover:text-blue-500";
-                // Chỉ đổi chữ khi nút đang hiển thị chữ (không phải đang quay loading)
+                // Cập nhật text an toàn
                 if(btnSpan) btnSpan.textContent = "Đăng Nhập";
             } else {
                 tabRegister.className = "flex-1 py-2 text-blue-600 font-bold border-b-2 border-blue-600";
                 tabLogin.className = "flex-1 py-2 text-slate-500 font-medium hover:text-blue-500";
-                // Chỉ đổi chữ khi nút đang hiển thị chữ
+                // Cập nhật text an toàn
                 if(btnSpan) btnSpan.textContent = "Đăng Ký Tài Khoản";
             }
         }
@@ -105,50 +105,41 @@
             }
 
             btn.disabled = true;
-            // Lúc này nút bấm biến thành icon xoay, thẻ span chứa chữ bị mất tạm thời
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            // [FIX] Luôn giữ thẻ <span> bao quanh icon loading để tránh lỗi [object Object] hoặc null khi querySelector
+            btn.innerHTML = '<span><i class="fas fa-spinner fa-spin"></i> Đang xử lý...</span>';
 
-            const endpoint = isLoginMode ? "/api/login" : "/api/register";
+            // Tự động nhận diện endpoint (Backend v6.5 đã hỗ trợ cả 2 dạng đường dẫn)
+            const endpoint = isLoginMode ? "/login" : "/register";
             
             try {
-                // Sử dụng FormData cho backend FastAPI
-                const formData = new FormData();
-                formData.append('email', email);
-                formData.append('password', password);
-                
                 const response = await fetch(`${HF_API_URL}${endpoint}`, {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
                     if (isLoginMode) {
-                        if (data.success) {
-                            localStorage.setItem('authToken', data.token);
-                            localStorage.setItem('userEmail', email);
-                            window.location.href = 'index.html';
-                        } else {
-                            throw new Error(data.detail || "Đăng nhập thất bại");
-                        }
+                        localStorage.setItem('authToken', data.token);
+                        localStorage.setItem('userEmail', email);
+                        window.location.href = 'index.html';
                     } else {
                         // Đăng ký thành công
-                        msg.textContent = data.message || "Đăng ký thành công! Vui lòng chờ Admin duyệt tài khoản.";
+                        msg.textContent = "Đăng ký thành công! Vui lòng chờ Admin duyệt tài khoản.";
                         msg.className = "text-center text-sm mt-4 text-yellow-600 bg-yellow-50 p-2 rounded block border border-yellow-200";
                         
                         // Chuyển tab về Login
                         switchTab('login');
                     }
                 } else {
-                    // Xử lý lỗi từ backend
-                    const errorMsg = data.detail || "Có lỗi xảy ra";
-                    throw new Error(errorMsg);
+                    throw new Error(data.detail || "Có lỗi xảy ra");
                 }
             } catch (err) {
                 msg.textContent = err.message;
-                // Kiểm tra nếu là lỗi chưa kích hoạt hoặc 403
-                if(err.message.includes("chưa được kích hoạt") || err.message.includes("kích hoạt")) {
+                if(err.message.includes("chưa được kích hoạt")) {
                      msg.className = "text-center text-sm mt-4 text-yellow-700 bg-yellow-50 p-2 rounded block border border-yellow-200";
                 } else {
                      msg.className = "text-center text-sm mt-4 text-red-500 block";
