@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Nhập - Hỗ trợ dạy học</title>
+    <title>Đăng Ký - HT MATH WEB</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -22,16 +22,10 @@
     <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
         <div class="text-center mb-8">
             <div class="inline-block p-3 rounded-full bg-blue-600 text-white mb-3">
-                <i class="fas fa-robot text-3xl"></i>
+                <i class="fas fa-user-plus text-3xl"></i>
             </div>
-            <h2 class="text-2xl font-bold text-slate-800">Trợ Lý Dạy học</h2>
-            <p class="text-slate-500 text-sm">Vui lòng đăng nhập để tiếp tục</p>
-        </div>
-
-        <!-- TABS -->
-        <div class="flex mb-6 border-b border-gray-200">
-            <button id="tabLogin" onclick="switchTab('login')" class="flex-1 py-2 text-blue-600 font-bold border-b-2 border-blue-600">Đăng Nhập</button>
-            <button id="tabRegister" onclick="switchTab('register')" class="flex-1 py-2 text-slate-500 font-medium hover:text-blue-500">Đăng Ký</button>
+            <h2 class="text-2xl font-bold text-slate-800">Đăng Ký Tài Khoản</h2>
+            <p class="text-slate-500 text-sm">Tạo tài khoản mới để sử dụng dịch vụ</p>
         </div>
 
         <!-- FORM -->
@@ -53,8 +47,14 @@
             </div>
 
             <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded shadow transition flex justify-center items-center">
-                <span>Đăng Nhập</span>
+                <span>Đăng Ký</span>
             </button>
+            
+            <div class="mt-4 text-center">
+                <a href="index.html" class="text-blue-600 hover:text-blue-800 text-sm font-medium transition duration-200">
+                    <i class="fas fa-arrow-left"></i> Quay lại đăng nhập
+                </a>
+            </div>
             
             <p id="message" class="text-center text-sm mt-4 text-red-500 hidden font-medium px-2 py-1 rounded"></p>
         </form>
@@ -63,27 +63,6 @@
     <script>
         // === QUAN TRỌNG: Link Server ===
         const HF_API_URL = "https://hoangthiencm-ht-math-web-backend.hf.space/api"; 
-
-        let isLoginMode = true;
-
-        function switchTab(mode) {
-            isLoginMode = (mode === 'login');
-            const tabLogin = document.getElementById('tabLogin');
-            const tabRegister = document.getElementById('tabRegister');
-            const btnSpan = document.querySelector('#submitBtn span');
-            const msg = document.getElementById('message');
-            msg.classList.add('hidden'); 
-
-            if(isLoginMode) {
-                tabLogin.className = "flex-1 py-2 text-blue-600 font-bold border-b-2 border-blue-600";
-                tabRegister.className = "flex-1 py-2 text-slate-500 font-medium hover:text-blue-500";
-                if(btnSpan) btnSpan.textContent = "Đăng Nhập";
-            } else {
-                tabRegister.className = "flex-1 py-2 text-blue-600 font-bold border-b-2 border-blue-600";
-                tabLogin.className = "flex-1 py-2 text-slate-500 font-medium hover:text-blue-500";
-                if(btnSpan) btnSpan.textContent = "Đăng Ký Tài Khoản";
-            }
-        }
 
         async function handleAuth(e) {
             e.preventDefault();
@@ -95,46 +74,36 @@
             btn.disabled = true;
             btn.innerHTML = '<span><i class="fas fa-spinner fa-spin"></i> Đang xử lý...</span>';
 
-            const endpoint = isLoginMode ? "/login" : "/register";
-            
             try {
-                // [FIX 422] SỬ DỤNG FORMDATA THAY VÌ JSON
                 const formData = new FormData();
                 formData.append('email', email);
                 formData.append('password', password);
 
-                const response = await fetch(`${HF_API_URL}${endpoint}`, {
+                const response = await fetch(`${HF_API_URL}/register`, {
                     method: 'POST',
-                    // Không cần set 'Content-Type': 'multipart/form-data', fetch tự làm
                     body: formData
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
-                    if (isLoginMode) {
-                        localStorage.setItem('authToken', data.token);
-                        localStorage.setItem('userEmail', email);
-                        window.location.href = 'index.html';
-                    } else {
-                        msg.textContent = "Đăng ký thành công! Vui lòng chờ Admin duyệt.";
-                        msg.className = "text-center text-sm mt-4 text-yellow-600 bg-yellow-50 p-2 rounded block border border-yellow-200";
-                        switchTab('login');
-                    }
+                    msg.textContent = "Đăng ký thành công! Vui lòng chờ Admin duyệt tài khoản.";
+                    msg.className = "text-center text-sm mt-4 text-yellow-600 bg-yellow-50 p-2 rounded block border border-yellow-200";
+                    msg.classList.remove('hidden');
+                    
+                    // Reset form
+                    document.getElementById('email').value = '';
+                    document.getElementById('password').value = '';
                 } else {
                     throw new Error(data.detail || "Có lỗi xảy ra");
                 }
             } catch (err) {
                 msg.textContent = err.message;
-                if(err.message.includes("chưa được kích hoạt")) {
-                     msg.className = "text-center text-sm mt-4 text-yellow-700 bg-yellow-50 p-2 rounded block border border-yellow-200";
-                } else {
-                     msg.className = "text-center text-sm mt-4 text-red-500 block";
-                }
-            } finally {
+                msg.className = "text-center text-sm mt-4 text-red-500 bg-red-50 p-2 rounded block border border-red-200";
                 msg.classList.remove('hidden');
+            } finally {
                 btn.disabled = false;
-                btn.innerHTML = isLoginMode ? '<span>Đăng Nhập</span>' : '<span>Đăng Ký Tài Khoản</span>';
+                btn.innerHTML = '<span>Đăng Ký</span>';
             }
         }
 
