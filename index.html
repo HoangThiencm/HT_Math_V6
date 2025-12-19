@@ -8,7 +8,6 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Tùy chỉnh thanh cuộn */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -43,7 +42,6 @@
             <div class="group-box shadow-sm">
                 <span class="group-label">Đầu vào</span>
                 <div class="space-y-3">
-                    <!-- File Input -->
                     <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-slate-50" id="dropZone">
                         <input type="file" id="fileInput" class="hidden" accept="image/*,.pdf" onchange="handleFileSelect(this)">
                         <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
@@ -51,21 +49,16 @@
                         <p class="text-xs text-gray-400 mt-1">(Hỗ trợ: PNG, JPG, JPEG, PDF)</p>
                     </div>
 
-                    <!-- Paste Clipboard -->
                     <button onclick="pasteFromClipboard()" class="w-full border border-gray-300 bg-white hover:bg-gray-50 text-slate-700 py-2 rounded flex items-center justify-center gap-2 transition">
                         <i class="fas fa-paste"></i> Dán ảnh từ Clipboard (Ctrl+V)
                     </button>
                     
-                    <!-- Preview Image Thumbnail -->
                     <div id="imagePreviewContainer" class="hidden relative mt-2">
-                        <!-- Thẻ img cho ảnh -->
                         <img id="imagePreview" class="w-full h-48 object-contain rounded border border-gray-200 bg-gray-100 hidden">
-                        <!-- Thẻ div cho PDF preview -->
                         <div id="pdfPreview" class="w-full h-32 flex flex-col items-center justify-center bg-red-50 border border-red-200 rounded hidden text-red-600">
                             <i class="fas fa-file-pdf text-4xl mb-2"></i>
                             <span class="text-sm font-bold">Tài liệu PDF</span>
                         </div>
-                        
                         <button onclick="clearImage()" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-red-600">&times;</button>
                         <p id="fileInfo" class="text-xs text-center text-gray-500 mt-1"></p>
                     </div>
@@ -100,7 +93,6 @@
                 </div>
             </div>
             
-            <!-- Link Admin -->
             <div class="text-center mt-4">
                  <a href="admin.html" class="text-xs text-blue-500 hover:underline">Trang quản trị (Admin)</a>
             </div>
@@ -110,7 +102,6 @@
         <!-- Right Panel: Result -->
         <div class="w-full md:w-2/3 flex flex-col h-full">
             <div class="bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col h-full overflow-hidden">
-                <!-- Toolbar Result -->
                 <div class="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
                     <span class="font-bold text-gray-700 text-sm">Kết quả</span>
                     <div class="flex gap-2">
@@ -123,9 +114,7 @@
                     </div>
                 </div>
 
-                <!-- Editor/Preview Area -->
                 <div class="flex-1 relative">
-                    <!-- Loading Overlay -->
                     <div id="loadingOverlay" class="absolute inset-0 bg-white bg-opacity-90 flex flex-col items-center justify-center z-10 hidden">
                         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-3"></div>
                         <p class="text-sm text-blue-600 font-medium animate-pulse">Đang xử lý với Gemini AI...</p>
@@ -133,9 +122,7 @@
                     </div>
                     
                     <div class="flex h-full">
-                        <!-- Raw Text (Editable) -->
                         <textarea id="resultText" class="w-1/2 h-full p-4 resize-none outline-none font-mono text-sm border-r border-gray-200 focus:bg-blue-50 transition" placeholder="Kết quả Markdown sẽ hiện ở đây..."></textarea>
-                        <!-- Preview -->
                         <div id="markdownPreview" class="w-1/2 h-full p-4 overflow-y-auto prose prose-sm max-w-none bg-white">
                             <p class="text-gray-400 italic text-center mt-10">Bản xem trước</p>
                         </div>
@@ -146,86 +133,46 @@
     </div>
 
     <script>
-        // === CẤU HÌNH API ===
         const API_BASE_URL = "https://hoangthiencm-ht-math-web-backend.hf.space"; 
-        let API_PREFIX = "/api"; // Mặc định dùng /api (Backend mới)
+        let API_PREFIX = "/api"; 
 
-        // --- HELPER CHUYỂN HƯỚNG AN TOÀN ---
         function safeRedirect(url) {
-            try {
-                // Thử chuyển hướng
-                window.location.href = url;
-            } catch (e) {
-                console.warn("Không thể tự động chuyển hướng:", e);
-                // Nếu lỗi (do môi trường preview), hiển thị thông báo đè lên trang
-                document.body.innerHTML = `
-                    <div class="flex flex-col items-center justify-center h-screen bg-gray-100 text-slate-700 p-4 text-center">
-                        <i class="fas fa-lock text-4xl mb-4 text-red-500"></i>
-                        <h1 class="text-xl font-bold mb-2">Yêu cầu đăng nhập</h1>
-                        <p class="mb-4">Phiên đăng nhập đã hết hạn hoặc không hợp lệ.</p>
-                        <p class="text-sm text-gray-500 bg-white p-3 rounded border">
-                            Vui lòng mở file <b>${url}</b> thủ công để tiếp tục.
-                        </p>
-                    </div>
-                `;
+            try { window.location.href = url; } catch (e) {
+                document.body.innerHTML = `<div class="p-4 text-center"><h1>Yêu cầu đăng nhập</h1><p>Mở file <b>${url}</b> thủ công.</p></div>`;
             }
         }
 
-        // --- AUTH CHECK ---
         const token = localStorage.getItem('authToken');
-        if (!token) {
-            safeRedirect('login.html');
-        } else {
-            document.getElementById('userEmail').textContent = localStorage.getItem('userEmail') || 'User';
-        }
+        if (!token) safeRedirect('login.html');
+        else document.getElementById('userEmail').textContent = localStorage.getItem('userEmail') || 'User';
 
-        // --- LOAD MODELS TỪ API (AUTO DETECT) ---
         async function loadModels() {
             const select = document.getElementById('modelSelect');
             try {
-                // 1. Thử gọi API với prefix /api
                 let url = `${API_BASE_URL}${API_PREFIX}/models`;
-                console.log("Đang kiểm tra API:", url);
                 let response = await fetch(url);
-
-                // 2. Nếu 404 => Server có thể là bản cũ hoặc có vấn đề prefix, thử endpoint gốc
                 if (response.status === 404) {
-                    console.warn("API /api/models không tồn tại (404). Đang thử endpoint gốc /models...");
                     API_PREFIX = ""; 
                     url = `${API_BASE_URL}${API_PREFIX}/models`;
                     response = await fetch(url);
                 }
-                
                 if (response.ok) {
                     const data = await response.json();
-                    console.log(`Đã kết nối thành công! API Prefix: "${API_PREFIX}". Models:`, data);
-
-                    if(data.models && Array.isArray(data.models) && data.models.length > 0) {
-                        select.innerHTML = ''; // Xóa placeholder
-                        
+                    if(data.models && data.models.length > 0) {
+                        select.innerHTML = '';
                         data.models.forEach(model => {
-                            const cleanModel = model.trim();
-                            if(cleanModel) {
-                                const option = document.createElement('option');
-                                option.value = cleanModel;
-                                option.textContent = cleanModel;
-                                select.appendChild(option);
-                            }
+                            const option = document.createElement('option');
+                            option.value = model.trim();
+                            option.textContent = model.trim();
+                            select.appendChild(option);
                         });
-                    } else {
-                        console.warn("Server trả về danh sách model rỗng.");
-                        select.innerHTML = '<option value="" disabled>Danh sách model rỗng</option>';
                     }
-                } else {
-                    throw new Error(`Lỗi kết nối Server (${response.status})`);
                 }
             } catch (error) {
-                console.error("Lỗi khi tải models:", error);
-                select.innerHTML = '<option value="gemini-1.5-flash">gemini-1.5-flash (Offline Mode)</option>';
-                console.log("Đang sử dụng model fallback do lỗi kết nối.");
+                console.error("Lỗi models:", error);
+                select.innerHTML = '<option value="gemini-2.5-flash">gemini-2.5-flash (Fallback)</option>';
             }
         }
-        
         window.addEventListener('DOMContentLoaded', loadModels);
 
         function logout() {
@@ -233,89 +180,51 @@
             safeRedirect('login.html');
         }
 
-        // --- FILE HANDLING ---
         let currentFile = null;
-
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
 
         dropZone.addEventListener('click', () => fileInput.click());
-        
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('border-blue-500', 'bg-blue-50');
-        });
-        
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
-        });
-        
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-blue-500', 'bg-blue-50'); });
+        dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-blue-500', 'bg-blue-50'); });
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('border-blue-500', 'bg-blue-50');
-            if (e.dataTransfer.files.length) {
-                handleFile(e.dataTransfer.files[0]);
-            }
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
         });
-
-        // Xử lý Paste (Ctrl+V)
         window.addEventListener('paste', (e) => {
             const items = (e.clipboardData || e.originalEvent.clipboardData).items;
             for (const item of items) {
-                if (item.type.indexOf('image') !== -1) {
-                    const blob = item.getAsFile();
-                    handleFile(blob);
-                }
+                if (item.type.indexOf('image') !== -1) { handleFile(item.getAsFile()); break; }
             }
         });
-
         function pasteFromClipboard() {
             navigator.clipboard.read().then(items => {
                 for (const item of items) {
-                    if (item.types.includes('image/png') || item.types.includes('image/jpeg')) {
-                        item.getType('image/png').then(blob => handleFile(blob));
-                        break;
-                    }
+                    if (item.types.includes('image/png')) { item.getType('image/png').then(blob => handleFile(blob)); break; }
                 }
-            }).catch(err => alert("Vui lòng cho phép truy cập clipboard hoặc nhấn Ctrl+V."));
+            }).catch(() => alert("Nhấn Ctrl+V để dán."));
         }
-
-        function handleFileSelect(input) {
-            if (input.files.length) handleFile(input.files[0]);
-        }
-
+        function handleFileSelect(input) { if (input.files.length) handleFile(input.files[0]); }
         function handleFile(file) {
-            if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
-                alert("Chỉ hỗ trợ file Ảnh và file PDF!");
-                return;
-            }
+            if (!file.type.startsWith('image/') && file.type !== 'application/pdf') return alert("Chỉ hỗ trợ Ảnh và PDF!");
             currentFile = file;
-            
-            // UI Update
             document.getElementById('imagePreviewContainer').classList.remove('hidden');
             document.getElementById('dropZone').classList.add('hidden');
             document.getElementById('fileInfo').textContent = `File: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
-
-            const imgPreview = document.getElementById('imagePreview');
-            const pdfPreview = document.getElementById('pdfPreview');
-
+            
+            const imgPrev = document.getElementById('imagePreview');
+            const pdfPrev = document.getElementById('pdfPreview');
+            
             if (file.type === 'application/pdf') {
-                imgPreview.classList.add('hidden');
-                pdfPreview.classList.remove('hidden');
-                pdfPreview.classList.add('flex');
+                imgPrev.classList.add('hidden'); pdfPrev.classList.remove('hidden'); pdfPrev.classList.add('flex');
             } else {
-                pdfPreview.classList.add('hidden');
-                pdfPreview.classList.remove('flex');
-                imgPreview.classList.remove('hidden');
-                
+                pdfPrev.classList.add('hidden'); pdfPrev.classList.remove('flex'); imgPrev.classList.remove('hidden');
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    imgPreview.src = e.target.result;
-                };
+                reader.onload = (e) => imgPrev.src = e.target.result;
                 reader.readAsDataURL(file);
             }
         }
-
         function clearImage() {
             currentFile = null;
             document.getElementById('fileInput').value = '';
@@ -323,123 +232,86 @@
             document.getElementById('dropZone').classList.remove('hidden');
         }
 
-        // --- CORE LOGIC ---
         async function startConversion() {
-            if (!currentFile) return alert("Vui lòng chọn hoặc dán ảnh/PDF trước!");
-
+            if (!currentFile) return alert("Chọn file trước!");
             const mode = document.querySelector('input[name="mode"]:checked').value;
-            const modelSelect = document.getElementById('modelSelect');
-            const model = modelSelect.value || "gemini-1.5-flash"; 
+            const model = document.getElementById('modelSelect').value || "gemini-2.5-flash"; 
             const btn = document.getElementById('btnConvert');
             const loading = document.getElementById('loadingOverlay');
 
-            btn.disabled = true;
-            loading.classList.remove('hidden');
-
+            btn.disabled = true; loading.classList.remove('hidden');
             const formData = new FormData();
             formData.append('file', currentFile);
             formData.append('mode', mode);
             formData.append('model', model);
 
             try {
-                // SỬ DỤNG API_PREFIX ĐÃ TỰ ĐỘNG PHÁT HIỆN
-                const endpoint = `${API_BASE_URL}${API_PREFIX}/convert`;
-                console.log("Calling Convert API:", endpoint);
-
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(errorData.detail || `Lỗi Server (${response.status})`);
+                const res = await fetch(`${API_BASE_URL}${API_PREFIX}/convert`, { method: 'POST', body: formData });
+                if (!res.ok) {
+                    // Nếu lỗi 429 (Rate Limit), hiển thị thông báo cụ thể
+                    if (res.status === 429) {
+                        const err = await res.json();
+                        throw new Error(err.detail || "Bạn thao tác quá nhanh!");
+                    }
+                    const err = await res.json();
+                    throw new Error(err.detail || "Lỗi Server");
                 }
-
-                const data = await response.json();
-                
+                const data = await res.json();
                 if (data.success) {
-                    const text = data.result;
-                    document.getElementById('resultText').value = text;
-                    renderMarkdown(text);
-                } else {
-                    throw new Error("Không nhận được kết quả.");
+                    document.getElementById('resultText').value = data.result;
+                    renderMarkdown(data.result);
                 }
-
-            } catch (error) {
-                alert("Lỗi: " + error.message);
-                console.error(error);
-            } finally {
-                btn.disabled = false;
-                loading.classList.add('hidden');
-            }
+            } catch (e) { alert(e.message); } 
+            finally { btn.disabled = false; loading.classList.add('hidden'); }
         }
 
         const resultText = document.getElementById('resultText');
         const markdownPreview = document.getElementById('markdownPreview');
-
         resultText.addEventListener('input', () => renderMarkdown(resultText.value));
-
         function renderMarkdown(text) {
             markdownPreview.innerHTML = marked.parse(text);
-            if (window.MathJax) {
-                MathJax.typesetPromise([markdownPreview]).catch((err) => console.log(err));
-            }
+            if (window.MathJax) MathJax.typesetPromise([markdownPreview]).catch(() => {});
         }
-
         function copyText() {
-            const text = document.getElementById('resultText').value;
-            navigator.clipboard.writeText(text).then(() => alert("Đã copy!"));
+            navigator.clipboard.writeText(resultText.value).then(() => alert("Đã copy!"));
         }
         
         async function downloadWord() {
-            const text = document.getElementById('resultText').value;
-            
-            // Hiển thị thông báo đang xử lý (dùng tạm alert hoặc custom UI)
-            const originalBtnText = document.querySelector('button[onclick="downloadWord()"]').innerHTML;
-            document.querySelector('button[onclick="downloadWord()"]').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo...';
+            const text = resultText.value;
+            const btn = document.querySelector('button[onclick="downloadWord()"]');
+            const oldText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Xử lý...';
             
             try {
                 const formData = new FormData();
                 formData.append("markdown_text", text);
-
-                const response = await fetch(`${API_BASE_URL}${API_PREFIX}/export-docx`, {
-                    method: "POST",
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const error = await response.json().catch(() => ({}));
-                    throw new Error(error.detail || "Lỗi tạo file Word");
-                }
-
-                // Nhận file blob .docx
-                const blob = await response.blob();
+                const res = await fetch(`${API_BASE_URL}${API_PREFIX}/export-docx`, { method: "POST", body: formData });
+                if (!res.ok) throw new Error("Lỗi tạo file Word");
+                const blob = await res.blob();
                 const url = URL.createObjectURL(blob);
-
                 const a = document.createElement("a");
-                a.href = url;
-                a.download = "ket_qua.docx";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-
-                URL.revokeObjectURL(url);
-            } catch (e) {
-                alert("Lỗi xuất Word: " + e.message);
-            } finally {
-                document.querySelector('button[onclick="downloadWord()"]').innerHTML = originalBtnText;
-            }
+                a.href = url; a.download = "ket_qua.docx";
+                a.click(); URL.revokeObjectURL(url);
+            } catch (e) { alert(e.message); }
+            finally { btn.innerHTML = oldText; }
         }
+
+        setInterval(async () => {
+            const email = localStorage.getItem('userEmail');
+            const token = localStorage.getItem('authToken');
+            if (!email || !token) return;
+            try {
+                const formData = new FormData();
+                formData.append('email', email);
+                formData.append('token', token);
+                const res = await fetch(`${API_BASE_URL}${API_PREFIX}/check-session`, { method: 'POST', body: formData });
+                if (res.status === 401) { alert("Tài khoản đã đăng nhập nơi khác!"); logout(); }
+            } catch (e) {}
+        }, 10000);
     </script>
-    
     <script>
-        window.MathJax = {
-            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
-            svg: { fontCache: 'global' }
-        };
+        window.MathJax = { tex: { inlineMath: [['$', '$']] }, svg: { fontCache: 'global' } };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
 </body>
 </html>
