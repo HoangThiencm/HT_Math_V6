@@ -476,36 +476,61 @@
         }
 
         async function handleDownloadDocx() {
-            if (!currentMarkdown) return;
+            if (!currentMarkdown) {
+                alert("Không có nội dung để xuất!");
+                return;
+            }
+            
             const btn = document.getElementById('download-btn');
-            btn.innerText = "Đang tạo...";
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo...';
             btn.disabled = true;
 
             try {
                 const formData = new FormData();
                 formData.append('markdown_text', currentMarkdown);
 
+                log("Đang gửi yêu cầu xuất Word...");
                 const response = await fetch(`${API_URL}/api/export-docx`, {
                     method: 'POST',
                     body: formData
                 });
 
-                if (!response.ok) throw new Error("Lỗi tạo file Word");
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorMsg = "Lỗi tạo file Word";
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        errorMsg = errorData.detail || errorMsg;
+                    } catch (e) {
+                        errorMsg = errorText || errorMsg;
+                    }
+                    throw new Error(errorMsg);
+                }
 
                 const blob = await response.blob();
+                
+                if (blob.size === 0) {
+                    throw new Error("File Word rỗng, có thể do lỗi xử lý");
+                }
+                
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = "Ket_qua_HT_MATH.docx";
                 document.body.appendChild(a);
                 a.click();
+                document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
-                log("Đã tải file Word.");
+                log("Đã tải file Word thành công!");
 
             } catch (e) {
-                alert(e.message);
+                const errorMsg = e.message || "Lỗi không xác định";
+                alert("Lỗi xuất Word: " + errorMsg);
+                log("Lỗi xuất Word: " + errorMsg);
+                console.error("Export Word error:", e);
             } finally {
-                btn.innerHTML = '<i class="fas fa-file-word"></i> Tải Word (Eq)';
+                btn.innerHTML = originalHTML;
                 btn.disabled = false;
             }
         }
@@ -522,22 +547,67 @@
         // Cho phép chỉnh sửa textarea và tự động cập nhật preview
         document.addEventListener('DOMContentLoaded', () => {
             const textarea = document.getElementById('result-text');
+            const previewDiv = document.getElementById('result-preview');
+            
             if (textarea) {
                 textarea.addEventListener('input', () => {
                     currentMarkdown = textarea.value;
                     updatePreview();
                 });
+                
+                // Paste image vào textarea
+                textarea.addEventListener('paste', async (event) => {
+                    const items = event.clipboardData.items;
+                    for (let i = 0; i < items.length; i++) {
+                        const item = items[i];
+                        if (item.type.indexOf('image') !== -1) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            const blob = item.getAsFile();
+                            if (blob) {
+                                await handlePastedImage(blob);
+                            }
+                            return;
+                        }
+                    }
+                });
             }
             
-            // Paste image vào textarea hoặc preview
+            // Paste image vào preview area
+            if (previewDiv) {
+                previewDiv.addEventListener('paste', async (event) => {
+                    const items = event.clipboardData.items;
+                    for (let i = 0; i < items.length; i++) {
+                        const item = items[i];
+                        if (item.type.indexOf('image') !== -1) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            const blob = item.getAsFile();
+                            if (blob) {
+                                await handlePastedImage(blob);
+                            }
+                            return;
+                        }
+                    }
+                });
+            }
+            
+            // Paste image toàn cục (khi focus vào bất kỳ đâu)
             document.addEventListener('paste', async (event) => {
+                // Chỉ xử lý nếu không có element nào khác đang xử lý
+                if (event.target.tagName === 'TEXTAREA' || event.target.id === 'result-preview') {
+                    return; // Đã được xử lý bởi event listener riêng
+                }
+                
                 const items = event.clipboardData.items;
                 for (let i = 0; i < items.length; i++) {
                     const item = items[i];
                     if (item.type.indexOf('image') !== -1) {
                         event.preventDefault();
                         const blob = item.getAsFile();
-                        await handlePastedImage(blob);
+                        if (blob) {
+                            await handlePastedImage(blob);
+                        }
                         break;
                     }
                 }
@@ -565,9 +635,21 @@
         }
 
         async function handlePastedImage(blob) {
-            if (!blob) return;
+            if (!blob) {
+                log("Không có ảnh để xử lý");
+                return;
+            }
             
             log("Đang xử lý ảnh đã dán...");
+            
+            // Hiển thị loading
+            const loadingDiv = document.getElementById('loading');
+            const convertBtn = document.getElementById('convert-btn');
+            if (loadingDiv) loadingDiv.classList.remove('hidden');
+            if (convertBtn) {
+                convertBtn.disabled = true;
+                convertBtn.classList.add('hidden');
+            }
             
             try {
                 const formData = new FormData();
@@ -581,19 +663,32 @@
                 });
 
                 if (!response.ok) {
-                    const errData = await response.json();
+                    const errData = await response.json().catch(() => ({ detail: "Lỗi không xác định" }));
                     throw new Error(errData.detail || "Lỗi chuyển đổi ảnh");
                 }
 
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Nối kết quả vào markdown hiện tại
-                    const existingText = document.getElementById('result-text').value;
-                    const newText = existingText ? existingText + '\n\n' + data.result : data.result;
+                    // Nối kết quả vào markdown hiện tại (tại vị trí con trỏ nếu có)
+                    const textarea = document.getElementById('result-text');
+                    const existingText = textarea.value;
+                    const cursorPos = textarea.selectionStart || existingText.length;
+                    
+                    // Chèn vào vị trí con trỏ hoặc cuối cùng
+                    const beforeText = existingText.substring(0, cursorPos);
+                    const afterText = existingText.substring(cursorPos);
+                    const separator = (beforeText && afterText) ? '\n\n' : (beforeText || afterText) ? '\n\n' : '';
+                    const newText = beforeText + separator + data.result + (afterText ? '\n\n' + afterText : '');
                     
                     currentMarkdown = newText;
-                    document.getElementById('result-text').value = currentMarkdown;
+                    textarea.value = currentMarkdown;
+                    
+                    // Đặt lại vị trí con trỏ
+                    const newCursorPos = cursorPos + separator.length + data.result.length;
+                    textarea.setSelectionRange(newCursorPos, newCursorPos);
+                    textarea.focus();
+                    
                     updatePreview();
                     
                     document.getElementById('download-btn').classList.remove('hidden');
@@ -606,6 +701,13 @@
             } catch (error) {
                 alert("Lỗi xử lý ảnh: " + error.message);
                 log("Lỗi: " + error.message);
+                console.error("Paste image error:", error);
+            } finally {
+                if (loadingDiv) loadingDiv.classList.add('hidden');
+                if (convertBtn) {
+                    convertBtn.disabled = false;
+                    convertBtn.classList.remove('hidden');
+                }
             }
         }
 
