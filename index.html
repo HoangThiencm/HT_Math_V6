@@ -106,9 +106,7 @@
 
     <script>
         // --- CẤU HÌNH API ---
-        const API_URL = "https://YOUR_HF_SPACE_URL"; // Thay bằng URL thật của bạn
-        // Nếu chạy local hoặc cùng domain thì để trống hoặc ""
-        // const API_URL = ""; 
+        const API_URL = "https://hoangthiencm-ht-math-web-backend.hf.space";
 
         // --- GLOBAL VARIABLES ---
         let checkSessionInterval = null;
@@ -157,12 +155,14 @@
             btn.disabled = true;
 
             try {
-                // Gọi API Login
-                // Lưu ý: Thay đường dẫn phù hợp với backend của bạn
+                // SỬA LỖI: Dùng FormData thay vì JSON
+                const formData = new FormData();
+                formData.append('email', email);
+                formData.append('password', password);
+
                 const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: formData // Không cần header Content-Type, trình duyệt tự set
                 });
 
                 const data = await response.json();
@@ -191,7 +191,8 @@
         async function handleLogout() {
             const email = localStorage.getItem('userEmail');
             
-            // Gọi API logout để xóa session trên server (tùy chọn)
+            // Gọi API logout để xóa session trên server
+            // Lưu ý: Backend logout của bạn dùng `request.json()` nên chỗ này giữ nguyên JSON là ĐÚNG.
             if (email) {
                 try {
                     await fetch(`${API_URL}/api/logout`, {
@@ -223,10 +224,14 @@
                 }
 
                 try {
+                    // SỬA LỖI: Dùng FormData cho check-session (vì backend dùng Form(...))
+                    const formData = new FormData();
+                    formData.append('email', email);
+                    formData.append('token', token);
+
                     const response = await fetch(`${API_URL}/api/check-session`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email, token })
+                        body: formData
                     });
 
                     // NẾU 401 -> LOGOUT NGAY
@@ -238,8 +243,7 @@
                     }
 
                 } catch (error) {
-                    // Lỗi mạng không nên gây logout ngay lập tức, 
-                    // có thể do user mất mạng tạm thời.
+                    // Lỗi mạng không nên gây logout ngay lập tức
                     log("Lỗi mạng khi check session: " + error.message);
                 }
             }, 10000); // 10 giây
