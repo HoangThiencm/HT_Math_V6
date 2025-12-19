@@ -3,356 +3,280 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chuyển đổi PDF/Ảnh - HT_Math_Web</title>
+    <title>Ứng Dụng Ổn Định - Single Device</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .group-box { border: 1px solid #e2e8f0; border-radius: 0.5rem; position: relative; margin-top: 1rem; padding: 1.5rem 1rem 1rem 1rem; background: white; }
-        .group-label { position: absolute; top: -0.75rem; left: 0.75rem; background: white; padding: 0 0.5rem; font-weight: bold; color: #475569; font-size: 0.875rem; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f3f4f6; }
+        .hidden { display: none; }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-[#F0F2F5] text-slate-800 h-screen flex flex-col font-sans">
+<body class="flex items-center justify-center min-h-screen">
 
-    <!-- Navbar -->
-    <nav class="bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center shadow-sm">
-        <div class="flex items-center gap-3">
-            <div class="bg-blue-600 text-white p-2 rounded-lg"><i class="fas fa-cube"></i></div>
-            <h1 class="font-bold text-lg hidden md:block">HT_Math Converter Web <span class="text-xs font-normal text-gray-500">v1.0</span></h1>
-        </div>
-        <div class="flex items-center gap-4">
-            <span id="userEmail" class="text-sm font-medium text-slate-600">Đang tải...</span>
-            <button onclick="logout()" class="text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-md text-sm transition font-medium">
-                <i class="fas fa-sign-out-alt mr-1"></i> Đăng xuất
-            </button>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="flex-1 overflow-hidden flex flex-col md:flex-row gap-4 p-4 max-w-7xl mx-auto w-full">
+    <!-- LOGIN FORM -->
+    <div id="login-container" class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Đăng Nhập</h2>
+        <div id="login-error" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm"></div>
         
-        <!-- Left Panel: Controls -->
-        <div class="w-full md:w-1/3 flex flex-col gap-2 overflow-y-auto pr-2">
-            
-            <!-- Group: Đầu vào -->
-            <div class="group-box shadow-sm">
-                <span class="group-label">Đầu vào</span>
-                <div class="space-y-3">
-                    <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-slate-50" id="dropZone">
-                        <input type="file" id="fileInput" class="hidden" accept="image/*,.pdf" onchange="handleFileSelect(this)">
-                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                        <p class="text-sm text-gray-500">Kéo thả ảnh/PDF hoặc <span class="text-blue-600 font-bold">Chọn file</span></p>
-                        <p class="text-xs text-gray-400 mt-1">(Hỗ trợ: PNG, JPG, JPEG, PDF)</p>
-                    </div>
-
-                    <button onclick="pasteFromClipboard()" class="w-full border border-gray-300 bg-white hover:bg-gray-50 text-slate-700 py-2 rounded flex items-center justify-center gap-2 transition">
-                        <i class="fas fa-paste"></i> Dán ảnh từ Clipboard (Ctrl+V)
-                    </button>
-                    
-                    <div id="imagePreviewContainer" class="hidden relative mt-2">
-                        <img id="imagePreview" class="w-full h-48 object-contain rounded border border-gray-200 bg-gray-100 hidden">
-                        <div id="pdfPreview" class="w-full h-32 flex flex-col items-center justify-center bg-red-50 border border-red-200 rounded hidden text-red-600">
-                            <i class="fas fa-file-pdf text-4xl mb-2"></i>
-                            <span class="text-sm font-bold">Tài liệu PDF</span>
-                        </div>
-                        <button onclick="clearImage()" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-red-600">&times;</button>
-                        <p id="fileInfo" class="text-xs text-center text-gray-500 mt-1"></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Group: Tùy chọn -->
-            <div class="group-box shadow-sm">
-                <span class="group-label">Tùy chọn chuyển đổi</span>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Model:</label>
-                        <select id="modelSelect" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                            <option value="" disabled selected>Đang kết nối server...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="flex gap-4">
-                        <label class="flex items-center cursor-pointer">
-                            <input type="radio" name="mode" value="latex" checked class="text-blue-600 focus:ring-blue-500">
-                            <span class="ml-2 text-sm">Chuyển đổi LaTeX</span>
-                        </label>
-                        <label class="flex items-center cursor-pointer">
-                            <input type="radio" name="mode" value="text" class="text-blue-600 focus:ring-blue-500">
-                            <span class="ml-2 text-sm">Văn bản thuần</span>
-                        </label>
-                    </div>
-
-                    <button id="btnConvert" onclick="startConversion()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded shadow transition flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                        <i class="fas fa-play"></i> Thực hiện
-                    </button>
-                </div>
-            </div>
-            
-            <div class="text-center mt-4">
-                 <a href="admin.html" class="text-xs text-blue-500 hover:underline">Trang quản trị (Admin)</a>
-            </div>
-
+        <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+            <input type="email" id="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Email của bạn">
         </div>
+        
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-bold mb-2">Mật khẩu</label>
+            <input type="password" id="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="*********">
+        </div>
+        
+        <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-200">
+            Đăng Nhập
+        </button>
+    </div>
 
-        <!-- Right Panel: Result -->
-        <div class="w-full md:w-2/3 flex flex-col h-full">
-            <div class="bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col h-full overflow-hidden">
-                <div class="bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center">
-                    <span class="font-bold text-gray-700 text-sm">Kết quả</span>
-                    <div class="flex gap-2">
-                        <button onclick="copyText()" class="text-slate-600 hover:text-blue-600 text-sm px-2 py-1 rounded hover:bg-gray-200 transition" title="Copy">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
-                        <button onclick="downloadWord()" class="text-slate-600 hover:text-blue-600 text-sm px-2 py-1 rounded hover:bg-gray-200 transition" title="Xuất Word">
-                            <i class="fas fa-file-word"></i> Xuất Word
-                        </button>
-                    </div>
+    <!-- MAIN APP DASHBOARD (Chỉ hiện sau khi login) -->
+    <div id="app-container" class="hidden w-full max-w-4xl p-4">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">Dashboard</h1>
+                    <p class="text-sm text-green-600"><i class="fas fa-circle text-xs"></i> Đang hoạt động</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span id="user-display" class="font-medium text-gray-600"></span>
+                    <button onclick="handleLogout()" class="text-red-500 hover:text-red-700 font-medium text-sm">
+                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="bg-blue-50 p-4 rounded border border-blue-100">
+                    <h3 class="font-bold text-blue-800 mb-2">Trạng thái kết nối</h3>
+                    <p class="text-sm text-blue-700">
+                        Hệ thống đang kiểm tra phiên làm việc mỗi 10 giây. 
+                        Nếu bạn đăng nhập ở máy khác, máy này sẽ tự động đăng xuất.
+                    </p>
                 </div>
 
-                <div class="flex-1 relative">
-                    <div id="loadingOverlay" class="absolute inset-0 bg-white bg-opacity-90 flex flex-col items-center justify-center z-10 hidden">
-                        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-3"></div>
-                        <p class="text-sm text-blue-600 font-medium animate-pulse">Đang xử lý với Gemini AI...</p>
-                        <p class="text-xs text-gray-500 mt-2">(File PDF nhiều trang sẽ mất nhiều thời gian hơn)</p>
+                <!-- Khu vực chức năng chính -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="border p-4 rounded hover:shadow-md transition cursor-pointer">
+                        <i class="fas fa-magic text-purple-500 mb-2 text-2xl"></i>
+                        <h4 class="font-bold">Chức năng 1</h4>
+                        <p class="text-xs text-gray-500">Mô tả ngắn về chức năng...</p>
                     </div>
-                    
-                    <div class="flex h-full">
-                        <textarea id="resultText" class="w-1/2 h-full p-4 resize-none outline-none font-mono text-sm border-r border-gray-200 focus:bg-blue-50 transition" placeholder="Kết quả Markdown sẽ hiện ở đây..."></textarea>
-                        <div id="markdownPreview" class="w-1/2 h-full p-4 overflow-y-auto prose prose-sm max-w-none bg-white">
-                            <p class="text-gray-400 italic text-center mt-10">Bản xem trước</p>
-                        </div>
+                    <div class="border p-4 rounded hover:shadow-md transition cursor-pointer">
+                        <i class="fas fa-chart-line text-green-500 mb-2 text-2xl"></i>
+                        <h4 class="font-bold">Chức năng 2</h4>
+                        <p class="text-xs text-gray-500">Mô tả ngắn về chức năng...</p>
                     </div>
                 </div>
+            </div>
+            
+            <div id="status-log" class="mt-6 text-xs text-gray-400 font-mono h-32 overflow-y-auto bg-gray-900 p-2 rounded">
+                > System ready...<br>
             </div>
         </div>
     </div>
 
+    <!-- MODAL CẢNH BÁO OUT -->
+    <div id="logout-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 hidden flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg max-w-sm text-center">
+            <i class="fas fa-exclamation-triangle text-yellow-500 text-4xl mb-4"></i>
+            <h3 class="text-lg font-bold mb-2">Phiên đăng nhập hết hạn</h3>
+            <p class="text-gray-600 mb-4 text-sm">Tài khoản của bạn đã được đăng nhập trên một thiết bị khác.</p>
+            <button onclick="location.reload()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">
+                Đăng nhập lại
+            </button>
+        </div>
+    </div>
+
     <script>
-        const API_BASE_URL = "https://hoangthiencm-ht-math-web-backend.hf.space"; 
-        let API_PREFIX = "/api"; 
+        // --- CẤU HÌNH API ---
+        const API_URL = "https://YOUR_HF_SPACE_URL"; // Thay bằng URL thật của bạn
+        // Nếu chạy local hoặc cùng domain thì để trống hoặc ""
+        // const API_URL = ""; 
 
-        function safeRedirect(url) {
-            try { window.location.href = url; } catch (e) {
-                document.body.innerHTML = `<div class="p-4 text-center"><h1>Yêu cầu đăng nhập</h1><p>Mở file <b>${url}</b> thủ công.</p></div>`;
+        // --- GLOBAL VARIABLES ---
+        let checkSessionInterval = null;
+
+        // --- UTILS ---
+        function log(msg) {
+            const el = document.getElementById('status-log');
+            if(el) {
+                const time = new Date().toLocaleTimeString();
+                el.innerHTML += `> [${time}] ${msg}<br>`;
+                el.scrollTop = el.scrollHeight;
             }
+            console.log(msg);
         }
 
-        const token = localStorage.getItem('authToken');
-        if (!token) safeRedirect('login.html');
-        else document.getElementById('userEmail').textContent = localStorage.getItem('userEmail') || 'User';
-
-        async function loadModels() {
-            const select = document.getElementById('modelSelect');
-            try {
-                // Xử lý URL an toàn hơn để tránh //
-                const baseUrl = API_BASE_URL.replace(/\/+$/, "");
-                let url = `${baseUrl}${API_PREFIX}/models`;
-                
-                let response = await fetch(url);
-                if (response.status === 404) {
-                    API_PREFIX = ""; 
-                    url = `${baseUrl}/models`;
-                    response = await fetch(url);
-                }
-                if (response.ok) {
-                    const data = await response.json();
-                    if(data.models && data.models.length > 0) {
-                        select.innerHTML = '';
-                        data.models.forEach(model => {
-                            const option = document.createElement('option');
-                            option.value = model.trim();
-                            option.textContent = model.trim();
-                            select.appendChild(option);
-                        });
-                    }
-                }
-            } catch (error) {
-                console.error("Lỗi models:", error);
-                select.innerHTML = '<option value="gemini-2.5-flash">gemini-2.5-flash (Fallback)</option>';
-            }
-        }
-        window.addEventListener('DOMContentLoaded', loadModels);
-
-        function logout() {
-            localStorage.clear();
-            safeRedirect('login.html');
+        function showError(msg) {
+            const el = document.getElementById('login-error');
+            el.innerText = msg;
+            el.classList.remove('hidden');
         }
 
-        let currentFile = null;
-        const dropZone = document.getElementById('dropZone');
-        const fileInput = document.getElementById('fileInput');
+        // --- AUTH LOGIC ---
 
-        dropZone.addEventListener('click', () => fileInput.click());
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-blue-500', 'bg-blue-50'); });
-        dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-blue-500', 'bg-blue-50'); });
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
-            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
-        });
-        window.addEventListener('paste', (e) => {
-            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-            for (const item of items) {
-                if (item.type.indexOf('image') !== -1) { handleFile(item.getAsFile()); break; }
-            }
-        });
-        function pasteFromClipboard() {
-            navigator.clipboard.read().then(items => {
-                for (const item of items) {
-                    if (item.types.includes('image/png')) { item.getType('image/png').then(blob => handleFile(blob)); break; }
-                }
-            }).catch(() => alert("Nhấn Ctrl+V để dán."));
-        }
-        function handleFileSelect(input) { if (input.files.length) handleFile(input.files[0]); }
-        function handleFile(file) {
-            if (!file.type.startsWith('image/') && file.type !== 'application/pdf') return alert("Chỉ hỗ trợ Ảnh và PDF!");
-            currentFile = file;
-            document.getElementById('imagePreviewContainer').classList.remove('hidden');
-            document.getElementById('dropZone').classList.add('hidden');
-            document.getElementById('fileInfo').textContent = `File: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
-            
-            const imgPrev = document.getElementById('imagePreview');
-            const pdfPrev = document.getElementById('pdfPreview');
-            
-            if (file.type === 'application/pdf') {
-                imgPrev.classList.add('hidden'); pdfPrev.classList.remove('hidden'); pdfPrev.classList.add('flex');
+        // 1. Kiểm tra trạng thái khi tải trang
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('app_token');
+            const email = localStorage.getItem('app_email');
+
+            if (token && email) {
+                showApp(email);
+                startSessionCheck(); // Bắt đầu heartbeat
             } else {
-                pdfPrev.classList.add('hidden'); pdfPrev.classList.remove('flex'); imgPrev.classList.remove('hidden');
-                const reader = new FileReader();
-                reader.onload = (e) => imgPrev.src = e.target.result;
-                reader.readAsDataURL(file);
+                showLogin();
             }
-        }
-        function clearImage() {
-            currentFile = null;
-            document.getElementById('fileInput').value = '';
-            document.getElementById('imagePreviewContainer').classList.add('hidden');
-            document.getElementById('dropZone').classList.remove('hidden');
-        }
+        });
 
-        async function startConversion() {
-            if (!currentFile) return alert("Chọn file trước!");
-            const mode = document.querySelector('input[name="mode"]:checked').value;
-            const model = document.getElementById('modelSelect').value || "gemini-2.5-flash"; 
-            const btn = document.getElementById('btnConvert');
-            const loading = document.getElementById('loadingOverlay');
+        // 2. Xử lý Đăng nhập
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.querySelector('button');
 
-            btn.disabled = true; loading.classList.remove('hidden');
-            const formData = new FormData();
-            formData.append('file', currentFile);
-            formData.append('mode', mode);
-            formData.append('model', model);
+            if (!email || !password) return showError("Vui lòng nhập đầy đủ thông tin");
+
+            btn.innerText = "Đang xử lý...";
+            btn.disabled = true;
 
             try {
-                // Xử lý URL an toàn
-                const baseUrl = API_BASE_URL.replace(/\/+$/, "");
-                const prefix = (typeof API_PREFIX !== 'undefined') ? API_PREFIX : '/api';
-                const endpoint = `${baseUrl}${prefix}/convert`;
-
-                const res = await fetch(endpoint, { method: 'POST', body: formData });
-                if (!res.ok) {
-                    if (res.status === 429) {
-                        const err = await res.json();
-                        throw new Error(err.detail || "Bạn thao tác quá nhanh!");
-                    }
-                    const err = await res.json();
-                    throw new Error(err.detail || "Lỗi Server");
-                }
-                const data = await res.json();
-                if (data.success) {
-                    document.getElementById('resultText').value = data.result;
-                    renderMarkdown(data.result);
-                }
-            } catch (e) { alert(e.message); } 
-            finally { btn.disabled = false; loading.classList.add('hidden'); }
-        }
-
-        const resultText = document.getElementById('resultText');
-        const markdownPreview = document.getElementById('markdownPreview');
-        resultText.addEventListener('input', () => renderMarkdown(resultText.value));
-        function renderMarkdown(text) {
-            markdownPreview.innerHTML = marked.parse(text);
-            if (window.MathJax) MathJax.typesetPromise([markdownPreview]).catch(() => {});
-        }
-        function copyText() {
-            navigator.clipboard.writeText(resultText.value).then(() => alert("Đã copy!"));
-        }
-        
-        async function downloadWord() {
-            const text = resultText.value;
-            const btn = document.querySelector('button[onclick="downloadWord()"]');
-            const oldText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Xử lý...';
-            
-            try {
-                const formData = new FormData();
-                formData.append("markdown_text", text);
-                
-                // Xử lý URL an toàn
-                const baseUrl = API_BASE_URL.replace(/\/+$/, "");
-                const prefix = (typeof API_PREFIX !== 'undefined') ? API_PREFIX : '/api';
-                const endpoint = `${baseUrl}${prefix}/export-docx`;
-
-                const res = await fetch(endpoint, { method: "POST", body: formData });
-                if (!res.ok) throw new Error("Lỗi tạo file Word");
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url; a.download = "ket_qua.docx";
-                a.click(); URL.revokeObjectURL(url);
-            } catch (e) { alert(e.message); }
-            finally { btn.innerHTML = oldText; }
-        }
-
-        // [UPDATED] AUTO LOGOUT CHECK (Heartbeat) - ỔN ĐỊNH HƠN
-        setInterval(async () => {
-            const email = localStorage.getItem('userEmail');
-            const token = localStorage.getItem('authToken');
-            
-            if (!email || !token) return; 
-
-            try {
-                const formData = new FormData();
-                formData.append('email', email);
-                formData.append('token', token);
-                
-                const baseUrl = API_BASE_URL.replace(/\/+$/, "");
-                const prefix = (typeof API_PREFIX !== 'undefined') ? API_PREFIX : '/api';
-                const endpoint = `${baseUrl}${prefix}/check-session`;
-                
-                const response = await fetch(endpoint, {
+                // Gọi API Login
+                // Lưu ý: Thay đường dẫn phù hợp với backend của bạn
+                const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
-                    body: formData
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
                 });
 
+                const data = await response.json();
+
                 if (!response.ok) {
-                    // Log lỗi 422 nếu có (nhưng không logout)
-                    if (response.status === 422) {
-                        const errText = await response.text();
-                        console.warn("Lỗi 422 check session (Format data sai?):", errText);
-                        return;
+                    throw new Error(data.detail || "Đăng nhập thất bại");
+                }
+
+                // LƯU TOKEN VÀO LOCAL STORAGE
+                localStorage.setItem('app_token', data.token);
+                localStorage.setItem('app_email', data.email);
+
+                log("Đăng nhập thành công. Token đã lưu.");
+                showApp(data.email);
+                startSessionCheck();
+
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                btn.innerText = "Đăng Nhập";
+                btn.disabled = false;
+            }
+        }
+
+        // 3. Xử lý Đăng xuất
+        async function handleLogout() {
+            const email = localStorage.getItem('app_email');
+            
+            // Gọi API logout để xóa session trên server (tùy chọn)
+            if (email) {
+                try {
+                    await fetch(`${API_URL}/api/logout`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+                } catch (e) { console.error(e); }
+            }
+
+            // Xóa local
+            clearLocalAuth();
+            showLogin();
+        }
+
+        // 4. Heartbeat: Kiểm tra session mỗi 10s
+        function startSessionCheck() {
+            if (checkSessionInterval) clearInterval(checkSessionInterval);
+
+            log("Bắt đầu kiểm tra session định kỳ...");
+            
+            checkSessionInterval = setInterval(async () => {
+                const token = localStorage.getItem('app_token');
+                const email = localStorage.getItem('app_email');
+
+                if (!token || !email) {
+                    forceLogout();
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_URL}/api/check-session`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, token })
+                    });
+
+                    // NẾU 401 -> LOGOUT NGAY
+                    if (response.status === 401) {
+                        log("Session không hợp lệ (401). Đăng xuất...");
+                        forceLogout(true); // true = hiện modal thông báo
+                    } else if (response.ok) {
+                        log("Session hợp lệ.");
                     }
 
-                    // Chỉ logout nếu Server TRẢ LỜI RÕ RÀNG là 401
-                    if (response.status === 401) {
-                        console.warn("Session check returned 401. Logging out...");
-                        alert("Tài khoản của bạn đã được đăng nhập từ nơi khác (hoặc phiên hết hạn).");
-                        logout();
-                    }
+                } catch (error) {
+                    // Lỗi mạng không nên gây logout ngay lập tức, 
+                    // có thể do user mất mạng tạm thời.
+                    log("Lỗi mạng khi check session: " + error.message);
                 }
-            } catch (e) {
-                console.log("Network error checking session, skipping...", e);
+            }, 10000); // 10 giây
+        }
+
+        // 5. Xử lý khi bị đá ra
+        function forceLogout(showModal = false) {
+            if (checkSessionInterval) clearInterval(checkSessionInterval);
+            clearLocalAuth();
+            
+            if (showModal) {
+                document.getElementById('app-container').classList.add('hidden');
+                document.getElementById('logout-modal').classList.remove('hidden');
+            } else {
+                showLogin();
             }
-        }, 10000); // 10 giây check 1 lần
+        }
+
+        function clearLocalAuth() {
+            localStorage.removeItem('app_token');
+            localStorage.removeItem('app_email');
+        }
+
+        // --- UI SWITCHING ---
+        function showApp(email) {
+            document.getElementById('login-container').classList.add('hidden');
+            document.getElementById('app-container').classList.remove('hidden');
+            document.getElementById('user-display').innerText = email;
+            document.getElementById('login-error').classList.add('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('app-container').classList.add('hidden');
+            document.getElementById('login-container').classList.remove('hidden');
+            document.getElementById('logout-modal').classList.add('hidden');
+        }
+
     </script>
-    <script>
-        window.MathJax = { tex: { inlineMath: [['$', '$']] }, svg: { fontCache: 'global' } };
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </body>
 </html>
