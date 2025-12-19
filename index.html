@@ -392,15 +392,44 @@
             navigator.clipboard.writeText(text).then(() => alert("Đã copy!"));
         }
         
-        function downloadWord() {
+        async function downloadWord() {
             const text = document.getElementById('resultText').value;
-            const blob = new Blob([text], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = "ket_qua.md"; 
-            a.click();
-            window.URL.revokeObjectURL(url);
+            
+            // Hiển thị thông báo đang xử lý (dùng tạm alert hoặc custom UI)
+            const originalBtnText = document.querySelector('button[onclick="downloadWord()"]').innerHTML;
+            document.querySelector('button[onclick="downloadWord()"]').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo...';
+            
+            try {
+                const formData = new FormData();
+                formData.append("markdown_text", text);
+
+                const response = await fetch(`${API_BASE_URL}${API_PREFIX}/export-docx`, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.detail || "Lỗi tạo file Word");
+                }
+
+                // Nhận file blob .docx
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "ket_qua.docx";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                URL.revokeObjectURL(url);
+            } catch (e) {
+                alert("Lỗi xuất Word: " + e.message);
+            } finally {
+                document.querySelector('button[onclick="downloadWord()"]').innerHTML = originalBtnText;
+            }
         }
     </script>
     
