@@ -178,14 +178,21 @@
                 </div>
                 <div class="relative flex-grow border rounded bg-white overflow-hidden">
                     <div id="result-preview" class="w-full h-full p-6 overflow-y-auto preview-content bg-white" 
-                         style="min-height: 200px;"
+                         style="min-height: 200px; outline: none;"
+                         tabindex="0"
                          ondrop="handleDrop(event)" 
                          ondragover="handleDragOver(event)"
-                         onpaste="handlePaste(event)">
+                         onpaste="handlePaste(event)"
+                         title="Click vào đây và dán ảnh (Ctrl+V) hoặc kéo thả ảnh vào đây">
                         <div class="text-center text-gray-400 mt-20" id="preview-placeholder">
                             <i class="fas fa-file-alt text-4xl mb-3 opacity-20"></i>
                             <p>Kết quả hiển thị</p>
-                            <p class="text-xs mt-2 text-gray-300">(Có thể dán ảnh trực tiếp vào đây)</p>
+                            <p class="text-xs mt-2 text-gray-300">
+                                <i class="fas fa-mouse-pointer"></i> Click vào đây và dán ảnh (Ctrl+V)
+                            </p>
+                            <p class="text-xs text-gray-300">
+                                <i class="fas fa-hand-paper"></i> Hoặc kéo thả ảnh vào đây
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -555,18 +562,30 @@
                     updatePreview();
                 });
                 
-                // Paste image vào textarea
-                textarea.addEventListener('paste', async (event) => {
+                // CHẶN paste ảnh vào textarea - chỉ cho phép text
+                textarea.addEventListener('paste', (event) => {
                     const items = event.clipboardData.items;
                     for (let i = 0; i < items.length; i++) {
                         const item = items[i];
                         if (item.type.indexOf('image') !== -1) {
                             event.preventDefault();
                             event.stopPropagation();
-                            const blob = item.getAsFile();
-                            if (blob) {
-                                await handlePastedImage(blob);
+                            // Hiển thị thông báo và chuyển focus sang preview
+                            const previewDiv = document.getElementById('result-preview');
+                            if (previewDiv) {
+                                previewDiv.focus();
+                                previewDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             }
+                            // Hiển thị tooltip
+                            const tooltip = document.createElement('div');
+                            tooltip.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #ff6b6b; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10000; font-size: 14px;';
+                            tooltip.innerHTML = '<i class="fas fa-info-circle"></i> Vui lòng dán ảnh vào khu vực <strong>Xem trước</strong>, không phải mã nguồn.';
+                            document.body.appendChild(tooltip);
+                            setTimeout(() => {
+                                tooltip.style.transition = 'opacity 0.3s';
+                                tooltip.style.opacity = '0';
+                                setTimeout(() => document.body.removeChild(tooltip), 300);
+                            }, 3000);
                             return;
                         }
                     }
@@ -592,13 +611,19 @@
                 });
             }
             
-            // Paste image toàn cục (khi focus vào bất kỳ đâu)
+            // Paste image toàn cục - chỉ khi KHÔNG ở textarea
             document.addEventListener('paste', async (event) => {
-                // Chỉ xử lý nếu không có element nào khác đang xử lý
-                if (event.target.tagName === 'TEXTAREA' || event.target.id === 'result-preview') {
-                    return; // Đã được xử lý bởi event listener riêng
+                // Bỏ qua nếu đang ở textarea (đã được xử lý riêng - chặn paste ảnh)
+                if (event.target.tagName === 'TEXTAREA' && event.target.id === 'result-text') {
+                    return;
                 }
                 
+                // Bỏ qua nếu đang ở preview (đã được xử lý riêng)
+                if (event.target.id === 'result-preview') {
+                    return;
+                }
+                
+                // Xử lý paste ảnh ở các vùng khác (ví dụ: body, div khác)
                 const items = event.clipboardData.items;
                 for (let i = 0; i < items.length; i++) {
                     const item = items[i];
@@ -606,6 +631,11 @@
                         event.preventDefault();
                         const blob = item.getAsFile();
                         if (blob) {
+                            // Tự động focus vào preview area và paste
+                            const previewDiv = document.getElementById('result-preview');
+                            if (previewDiv) {
+                                previewDiv.focus();
+                            }
                             await handlePastedImage(blob);
                         }
                         break;
