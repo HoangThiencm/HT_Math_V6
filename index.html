@@ -94,7 +94,7 @@
         <div class="bg-white rounded-lg shadow-sm p-4 mb-4 flex justify-between items-center mt-4">
             <div class="flex items-center gap-3">
                 <i class="fas fa-cube text-blue-600 text-2xl"></i>
-                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v1.0</span></h1>
+                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v6.7 (Real Equation Word)</span></h1>
             </div>
             <div class="flex items-center gap-4">
                 <div class="text-right hidden sm:block">
@@ -162,7 +162,7 @@
                     </button>
                 </div>
                 <div class="relative flex-grow border rounded bg-gray-900 overflow-hidden">
-                    <textarea id="result-text" class="w-full h-full p-4 font-mono text-sm resize-none focus:outline-none bg-gray-900 text-green-400" placeholder="Mã nguồn Markdown sẽ hiện ở đây..." readonly></textarea>
+                    <textarea id="result-text" class="w-full h-full p-4 font-mono text-sm resize-none focus:outline-none bg-gray-900 text-green-400" placeholder="Mã nguồn Markdown sẽ hiện ở đây... (Có thể chỉnh sửa trực tiếp)"></textarea>
                 </div>
             </div>
 
@@ -177,10 +177,15 @@
                     </button>
                 </div>
                 <div class="relative flex-grow border rounded bg-white overflow-hidden">
-                    <div id="result-preview" class="w-full h-full p-6 overflow-y-auto preview-content bg-white">
-                        <div class="text-center text-gray-400 mt-20">
+                    <div id="result-preview" class="w-full h-full p-6 overflow-y-auto preview-content bg-white" 
+                         style="min-height: 200px;"
+                         ondrop="handleDrop(event)" 
+                         ondragover="handleDragOver(event)"
+                         onpaste="handlePaste(event)">
+                        <div class="text-center text-gray-400 mt-20" id="preview-placeholder">
                             <i class="fas fa-file-alt text-4xl mb-3 opacity-20"></i>
                             <p>Kết quả hiển thị</p>
+                            <p class="text-xs mt-2 text-gray-300">(Có thể dán ảnh trực tiếp vào đây)</p>
                         </div>
                     </div>
                 </div>
@@ -451,16 +456,8 @@
                     currentMarkdown = data.result;
                     
                     document.getElementById('result-text').value = currentMarkdown;
+                    updatePreview();
                     
-                    const previewDiv = document.getElementById('result-preview');
-                    previewDiv.innerHTML = marked.parse(currentMarkdown);
-                    
-                    if (window.MathJax) {
-                        MathJax.typesetPromise([previewDiv]).then(() => {
-                            log("Render công thức toán hoàn tất.");
-                        });
-                    }
-
                     document.getElementById('download-btn').classList.remove('hidden');
                     document.getElementById('copy-btn').classList.remove('hidden');
                     log("Chuyển đổi thành công!");
@@ -518,6 +515,141 @@
             navigator.clipboard.writeText(currentMarkdown).then(() => {
                 alert("Đã copy nội dung Markdown!");
             });
+        }
+
+        // --- PASTE IMAGE & DRAG & DROP ---
+        
+        // Cho phép chỉnh sửa textarea và tự động cập nhật preview
+        document.addEventListener('DOMContentLoaded', () => {
+            const textarea = document.getElementById('result-text');
+            if (textarea) {
+                textarea.addEventListener('input', () => {
+                    currentMarkdown = textarea.value;
+                    updatePreview();
+                });
+            }
+            
+            // Paste image vào textarea hoặc preview
+            document.addEventListener('paste', async (event) => {
+                const items = event.clipboardData.items;
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    if (item.type.indexOf('image') !== -1) {
+                        event.preventDefault();
+                        const blob = item.getAsFile();
+                        await handlePastedImage(blob);
+                        break;
+                    }
+                }
+            });
+        });
+
+        function updatePreview() {
+            const previewDiv = document.getElementById('result-preview');
+            if (!previewDiv) return;
+            
+            if (currentMarkdown && currentMarkdown.trim()) {
+                previewDiv.innerHTML = marked.parse(currentMarkdown);
+                const placeholder = document.getElementById('preview-placeholder');
+                if (placeholder) placeholder.style.display = 'none';
+                
+                if (window.MathJax) {
+                    MathJax.typesetPromise([previewDiv]).catch((err) => {
+                        console.log('MathJax error:', err);
+                    });
+                }
+            } else {
+                const placeholder = document.getElementById('preview-placeholder');
+                if (placeholder) placeholder.style.display = 'block';
+            }
+        }
+
+        async function handlePastedImage(blob) {
+            if (!blob) return;
+            
+            log("Đang xử lý ảnh đã dán...");
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', blob, 'pasted-image.png');
+                formData.append('model', document.getElementById('model-select').value);
+                formData.append('mode', document.getElementById('mode-select').value);
+
+                const response = await fetch(`${API_URL}/api/convert`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.detail || "Lỗi chuyển đổi ảnh");
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Nối kết quả vào markdown hiện tại
+                    const existingText = document.getElementById('result-text').value;
+                    const newText = existingText ? existingText + '\n\n' + data.result : data.result;
+                    
+                    currentMarkdown = newText;
+                    document.getElementById('result-text').value = currentMarkdown;
+                    updatePreview();
+                    
+                    document.getElementById('download-btn').classList.remove('hidden');
+                    document.getElementById('copy-btn').classList.remove('hidden');
+                    log("Đã xử lý ảnh đã dán thành công!");
+                } else {
+                    throw new Error("Không có kết quả trả về");
+                }
+
+            } catch (error) {
+                alert("Lỗi xử lý ảnh: " + error.message);
+                log("Lỗi: " + error.message);
+            }
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.style.backgroundColor = '#f0f9ff';
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.style.backgroundColor = '';
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    handlePastedImage(file);
+                } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+                    // Xử lý PDF được kéo thả
+                    const fileInput = document.getElementById('file-upload');
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    fileInput.files = dataTransfer.files;
+                    document.getElementById('file-name').innerText = file.name;
+                    document.getElementById('file-name').classList.remove('hidden');
+                    handleConvert();
+                }
+            }
+        }
+
+        function handlePaste(event) {
+            // Xử lý paste trong preview area
+            const items = event.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item.type.indexOf('image') !== -1) {
+                    event.preventDefault();
+                    const blob = item.getAsFile();
+                    handlePastedImage(blob);
+                    break;
+                }
+            }
         }
     </script>
 </body>
