@@ -3,12 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ứng Dụng Ổn Định - Single Device</title>
+    <title>HT MATH WEB - Chuyển Đổi PDF/Ảnh sang Word</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <!-- Marked.js for Markdown Preview -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- MathJax for LaTeX -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f3f4f6; }
         .hidden { display: none; }
@@ -22,13 +32,44 @@
             margin: 0 auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        .preview-content {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+        }
+        .preview-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .preview-content th, .preview-content td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .preview-content th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
 
     <!-- LOGIN FORM -->
     <div id="login-container" class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Đăng Nhập</h2>
+        <div class="text-center mb-6">
+            <i class="fas fa-cube text-blue-600 text-4xl mb-2"></i>
+            <h2 class="text-2xl font-bold text-gray-800">HT MATH WEB</h2>
+            <p class="text-gray-500 text-sm">Đăng nhập để sử dụng công cụ</p>
+        </div>
+        
         <div id="login-error" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm"></div>
         
         <div class="mb-4">
@@ -46,49 +87,108 @@
         </button>
     </div>
 
-    <!-- MAIN APP DASHBOARD (Chỉ hiện sau khi login) -->
-    <div id="app-container" class="hidden w-full max-w-4xl p-4">
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <div>
-                    <h1 class="text-xl font-bold text-gray-800">Dashboard</h1>
-                    <p class="text-sm text-green-600"><i class="fas fa-circle text-xs"></i> Đang hoạt động</p>
-                </div>
-                <div class="flex items-center gap-4">
-                    <span id="user-display" class="font-medium text-gray-600"></span>
-                    <button onclick="handleLogout()" class="text-red-500 hover:text-red-700 font-medium text-sm">
-                        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-                    </button>
-                </div>
+    <!-- MAIN APP DASHBOARD -->
+    <div id="app-container" class="hidden w-full max-w-6xl p-4 min-h-screen flex flex-col">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-sm p-4 mb-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-cube text-blue-600 text-2xl"></i>
+                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v6.6</span></h1>
             </div>
-
-            <div class="space-y-4">
-                <div class="bg-blue-50 p-4 rounded border border-blue-100">
-                    <h3 class="font-bold text-blue-800 mb-2">Trạng thái kết nối</h3>
-                    <p class="text-sm text-blue-700">
-                        Hệ thống đang kiểm tra phiên làm việc mỗi 10 giây. 
-                        Nếu bạn đăng nhập ở máy khác, máy này sẽ tự động đăng xuất.
-                    </p>
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p id="user-display" class="font-medium text-gray-700 text-sm"></p>
+                    <p class="text-xs text-green-600"><i class="fas fa-circle text-[8px]"></i> Online</p>
                 </div>
-
-                <!-- Khu vực chức năng chính -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="border p-4 rounded hover:shadow-md transition cursor-pointer">
-                        <i class="fas fa-magic text-purple-500 mb-2 text-2xl"></i>
-                        <h4 class="font-bold">Chức năng 1</h4>
-                        <p class="text-xs text-gray-500">Mô tả ngắn về chức năng...</p>
-                    </div>
-                    <div class="border p-4 rounded hover:shadow-md transition cursor-pointer">
-                        <i class="fas fa-chart-line text-green-500 mb-2 text-2xl"></i>
-                        <h4 class="font-bold">Chức năng 2</h4>
-                        <p class="text-xs text-gray-500">Mô tả ngắn về chức năng...</p>
-                    </div>
-                </div>
+                <button onclick="handleLogout()" class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded text-sm font-medium transition">
+                    <i class="fas fa-sign-out-alt"></i> Thoát
+                </button>
             </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-grow">
             
-            <div id="status-log" class="mt-6 text-xs text-gray-400 font-mono h-32 overflow-y-auto bg-gray-900 p-2 rounded">
-                > System ready...<br>
+            <!-- Left Column: Input -->
+            <div class="bg-white rounded-lg shadow-lg p-6 lg:col-span-1 flex flex-col h-full">
+                <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
+                    <i class="fas fa-file-import text-blue-500"></i> Tải file lên
+                </h3>
+                
+                <!-- File Drop Zone -->
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-gray-50 flex-grow flex flex-col justify-center items-center" id="drop-zone" onclick="document.getElementById('file-upload').click()">
+                    <input type="file" id="file-upload" class="hidden" accept=".pdf,.png,.jpg,.jpeg">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-600 font-medium">Click hoặc kéo thả file vào đây</p>
+                    <p class="text-xs text-gray-400 mt-1">Hỗ trợ: PDF, PNG, JPG</p>
+                    <div id="file-name" class="mt-3 text-sm font-semibold text-blue-600 hidden"></div>
+                </div>
+
+                <!-- Settings -->
+                <div class="mt-6 space-y-4">
+                    <div>
+                        <label class="block text-gray-700 text-xs font-bold mb-1">Mô hình AI</label>
+                        <select id="model-select" class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:border-blue-500">
+                            <option value="gemini-2.5-flash">Gemini 2.5 Flash (Nhanh)</option>
+                            <option value="gemini-1.5-pro">Gemini 1.5 Pro (Chính xác cao)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-xs font-bold mb-1">Chế độ</label>
+                        <select id="mode-select" class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:border-blue-500">
+                            <option value="latex">Toán học (Latex $...$)</option>
+                            <option value="text">Văn bản thường</option>
+                        </select>
+                    </div>
+                    
+                    <button id="convert-btn" onclick="handleConvert()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded shadow transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-bolt"></i> Chuyển đổi ngay
+                    </button>
+                    <div id="loading" class="hidden text-center py-2">
+                        <div class="loading-spinner mb-2"></div>
+                        <p class="text-xs text-gray-500">Đang xử lý, vui lòng đợi...</p>
+                    </div>
+                </div>
             </div>
+
+            <!-- Right Column: Result -->
+            <div class="bg-white rounded-lg shadow-lg p-6 lg:col-span-2 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                        <i class="fas fa-poll-h text-green-500"></i> Kết quả
+                    </h3>
+                    <div class="flex gap-2">
+                         <button id="copy-btn" onclick="copyToClipboard()" class="hidden bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded text-xs font-bold transition">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                        <button id="download-btn" onclick="handleDownloadDocx()" class="hidden bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-xs font-bold transition shadow">
+                            <i class="fas fa-file-word"></i> Tải Word
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex border-b mb-4">
+                    <button class="px-4 py-2 text-sm font-medium text-blue-600 border-b-2 border-blue-600 focus:outline-none" id="tab-preview" onclick="switchTab('preview')">Xem trước</button>
+                    <button class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none" id="tab-raw" onclick="switchTab('raw')">Mã nguồn (Markdown)</button>
+                </div>
+
+                <!-- Result Area -->
+                <div class="relative flex-grow border rounded bg-gray-50 overflow-hidden">
+                    <textarea id="result-text" class="hidden w-full h-full p-4 font-mono text-sm resize-none focus:outline-none" readonly></textarea>
+                    <div id="result-preview" class="w-full h-full p-6 overflow-y-auto preview-content bg-white">
+                        <div class="text-center text-gray-400 mt-20">
+                            <i class="fas fa-file-alt text-4xl mb-3 opacity-20"></i>
+                            <p>Kết quả sẽ hiển thị ở đây</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Status Log -->
+        <div id="status-log" class="mt-4 text-xs text-gray-400 font-mono h-20 overflow-y-auto bg-gray-900 p-2 rounded">
+            > System ready...<br>
         </div>
     </div>
 
@@ -110,6 +210,7 @@
 
         // --- GLOBAL VARIABLES ---
         let checkSessionInterval = null;
+        let currentMarkdown = "";
 
         // --- UTILS ---
         function log(msg) {
@@ -124,30 +225,45 @@
 
         function showError(msg) {
             const el = document.getElementById('login-error');
-            el.innerText = msg;
-            el.classList.remove('hidden');
+            if(el) {
+                el.innerText = msg;
+                el.classList.remove('hidden');
+                setTimeout(() => el.classList.add('hidden'), 5000);
+            } else {
+                alert(msg);
+            }
         }
 
-        // --- AUTH LOGIC ---
+        // --- AUTH LOGIC (GIỮ NGUYÊN TỪ PHIÊN BẢN TRƯỚC) ---
 
-        // 1. Kiểm tra trạng thái khi tải trang
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('authToken');
             const email = localStorage.getItem('userEmail');
 
+            // Xử lý File Input change
+            const fileInput = document.getElementById('file-upload');
+            if(fileInput) {
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        document.getElementById('file-name').innerText = file.name;
+                        document.getElementById('file-name').classList.remove('hidden');
+                    }
+                });
+            }
+
             if (token && email) {
                 showApp(email);
-                startSessionCheck(); // Bắt đầu heartbeat
+                startSessionCheck();
             } else {
                 showLogin();
             }
         });
 
-        // 2. Xử lý Đăng nhập
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const btn = document.querySelector('button');
+            const btn = document.querySelector('#login-container button');
 
             if (!email || !password) return showError("Vui lòng nhập đầy đủ thông tin");
 
@@ -155,14 +271,13 @@
             btn.disabled = true;
 
             try {
-                // SỬA LỖI: Dùng FormData thay vì JSON
                 const formData = new FormData();
                 formData.append('email', email);
                 formData.append('password', password);
 
                 const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
-                    body: formData // Không cần header Content-Type, trình duyệt tự set
+                    body: formData
                 });
 
                 const data = await response.json();
@@ -171,11 +286,10 @@
                     throw new Error(data.detail || "Đăng nhập thất bại");
                 }
 
-                // LƯU TOKEN VÀO LOCAL STORAGE
                 localStorage.setItem('authToken', data.token);
                 localStorage.setItem('userEmail', data.email);
 
-                log("Đăng nhập thành công. Token đã lưu.");
+                log("Đăng nhập thành công.");
                 showApp(data.email);
                 startSessionCheck();
 
@@ -187,12 +301,8 @@
             }
         }
 
-        // 3. Xử lý Đăng xuất
         async function handleLogout() {
             const email = localStorage.getItem('userEmail');
-            
-            // Gọi API logout để xóa session trên server
-            // Lưu ý: Backend logout của bạn dùng `request.json()` nên chỗ này giữ nguyên JSON là ĐÚNG.
             if (email) {
                 try {
                     await fetch(`${API_URL}/api/logout`, {
@@ -202,17 +312,11 @@
                     });
                 } catch (e) { console.error(e); }
             }
-
-            // Xóa local
-            clearLocalAuth();
-            showLogin();
+            forceLogout();
         }
 
-        // 4. Heartbeat: Kiểm tra session mỗi 10s
         function startSessionCheck() {
             if (checkSessionInterval) clearInterval(checkSessionInterval);
-
-            log("Bắt đầu kiểm tra session định kỳ...");
             
             checkSessionInterval = setInterval(async () => {
                 const token = localStorage.getItem('authToken');
@@ -224,7 +328,6 @@
                 }
 
                 try {
-                    // SỬA LỖI: Dùng FormData cho check-session (vì backend dùng Form(...))
                     const formData = new FormData();
                     formData.append('email', email);
                     formData.append('token', token);
@@ -234,25 +337,21 @@
                         body: formData
                     });
 
-                    // NẾU 401 -> LOGOUT NGAY
                     if (response.status === 401) {
-                        log("Session không hợp lệ (401). Đăng xuất...");
-                        forceLogout(true); // true = hiện modal thông báo
-                    } else if (response.ok) {
-                        log("Session hợp lệ.");
+                        log("Session invalid (401). Logout.");
+                        forceLogout(true);
                     }
 
                 } catch (error) {
-                    // Lỗi mạng không nên gây logout ngay lập tức
-                    log("Lỗi mạng khi check session: " + error.message);
+                    console.log("Heartbeat error: " + error.message);
                 }
-            }, 10000); // 10 giây
+            }, 10000); 
         }
 
-        // 5. Xử lý khi bị đá ra
         function forceLogout(showModal = false) {
             if (checkSessionInterval) clearInterval(checkSessionInterval);
-            clearLocalAuth();
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
             
             if (showModal) {
                 document.getElementById('app-container').classList.add('hidden');
@@ -262,25 +361,156 @@
             }
         }
 
-        function clearLocalAuth() {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userEmail');
-        }
-
-        // --- UI SWITCHING ---
         function showApp(email) {
             document.getElementById('login-container').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
             document.getElementById('user-display').innerText = email;
             document.getElementById('login-error').classList.add('hidden');
+            document.body.classList.remove('items-center', 'justify-center'); // Cho phép scroll khi content dài
+            document.body.classList.add('items-start');
         }
 
         function showLogin() {
             document.getElementById('app-container').classList.add('hidden');
             document.getElementById('login-container').classList.remove('hidden');
             document.getElementById('logout-modal').classList.add('hidden');
+            document.body.classList.add('items-center', 'justify-center');
+            document.body.classList.remove('items-start');
         }
 
+        // --- CONVERT LOGIC ---
+
+        async function handleConvert() {
+            const fileInput = document.getElementById('file-upload');
+            const modelSelect = document.getElementById('model-select');
+            const modeSelect = document.getElementById('mode-select');
+            const btn = document.getElementById('convert-btn');
+            const loading = document.getElementById('loading');
+
+            if (!fileInput.files[0]) {
+                alert("Vui lòng chọn file trước!");
+                return;
+            }
+
+            // UI State: Loading
+            btn.disabled = true;
+            btn.classList.add('hidden');
+            loading.classList.remove('hidden');
+            log("Đang gửi file lên server...");
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                formData.append('model', modelSelect.value);
+                formData.append('mode', modeSelect.value);
+
+                const response = await fetch(`${API_URL}/api/convert`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.detail || "Lỗi chuyển đổi");
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentMarkdown = data.result;
+                    // Update Raw Text
+                    document.getElementById('result-text').value = currentMarkdown;
+                    
+                    // Render Preview
+                    const previewDiv = document.getElementById('result-preview');
+                    previewDiv.innerHTML = marked.parse(currentMarkdown);
+                    
+                    // Re-render MathJax
+                    if (window.MathJax) {
+                        MathJax.typesetPromise([previewDiv]).then(() => {
+                            log("Render công thức toán hoàn tất.");
+                        });
+                    }
+
+                    // Show Buttons
+                    document.getElementById('download-btn').classList.remove('hidden');
+                    document.getElementById('copy-btn').classList.remove('hidden');
+                    log("Chuyển đổi thành công!");
+                } else {
+                    throw new Error("Không có kết quả trả về");
+                }
+
+            } catch (error) {
+                alert("Lỗi: " + error.message);
+                log("Lỗi: " + error.message);
+            } finally {
+                // UI State: Reset
+                loading.classList.add('hidden');
+                btn.classList.remove('hidden');
+                btn.disabled = false;
+            }
+        }
+
+        async function handleDownloadDocx() {
+            if (!currentMarkdown) return;
+            const btn = document.getElementById('download-btn');
+            btn.innerText = "Đang tạo...";
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('markdown_text', currentMarkdown);
+
+                const response = await fetch(`${API_URL}/api/export-docx`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error("Lỗi tạo file Word");
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = "Ket_qua_HT_MATH.docx";
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                log("Đã tải file Word.");
+
+            } catch (e) {
+                alert(e.message);
+            } finally {
+                btn.innerHTML = '<i class="fas fa-file-word"></i> Tải Word';
+                btn.disabled = false;
+            }
+        }
+
+        function copyToClipboard() {
+            if (!currentMarkdown) return;
+            navigator.clipboard.writeText(currentMarkdown).then(() => {
+                alert("Đã copy nội dung Markdown!");
+            });
+        }
+
+        function switchTab(tab) {
+            const previewBtn = document.getElementById('tab-preview');
+            const rawBtn = document.getElementById('tab-raw');
+            const previewArea = document.getElementById('result-preview');
+            const rawArea = document.getElementById('result-text');
+
+            if (tab === 'preview') {
+                previewBtn.className = "px-4 py-2 text-sm font-medium text-blue-600 border-b-2 border-blue-600 focus:outline-none";
+                rawBtn.className = "px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none";
+                previewArea.classList.remove('hidden');
+                rawArea.classList.add('hidden');
+            } else {
+                rawBtn.className = "px-4 py-2 text-sm font-medium text-blue-600 border-b-2 border-blue-600 focus:outline-none";
+                previewBtn.className = "px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none";
+                rawArea.classList.remove('hidden');
+                previewArea.classList.add('hidden');
+            }
+        }
     </script>
 </body>
 </html>
