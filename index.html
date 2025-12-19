@@ -148,7 +148,8 @@
     <script>
         // === CẤU HÌNH API ===
         const API_BASE_URL = "https://hoangthiencm-ht-math-web-backend.hf.space"; 
-        
+        let API_PREFIX = "/api"; // Mặc định dùng /api (Backend mới)
+
         // --- HELPER CHUYỂN HƯỚNG AN TOÀN ---
         function safeRedirect(url) {
             try {
@@ -178,16 +179,26 @@
             document.getElementById('userEmail').textContent = localStorage.getItem('userEmail') || 'User';
         }
 
-        // --- LOAD MODELS TỪ API ---
+        // --- LOAD MODELS TỪ API (AUTO DETECT) ---
         async function loadModels() {
             const select = document.getElementById('modelSelect');
             try {
-                console.log("Đang gọi API lấy models:", `${API_BASE_URL}/api/models`);
-                const response = await fetch(`${API_BASE_URL}/api/models`);
+                // 1. Thử gọi API với prefix /api
+                let url = `${API_BASE_URL}${API_PREFIX}/models`;
+                console.log("Đang kiểm tra API:", url);
+                let response = await fetch(url);
+
+                // 2. Nếu 404 => Server có thể là bản cũ hoặc có vấn đề prefix, thử endpoint gốc
+                if (response.status === 404) {
+                    console.warn("API /api/models không tồn tại (404). Đang thử endpoint gốc /models...");
+                    API_PREFIX = ""; 
+                    url = `${API_BASE_URL}${API_PREFIX}/models`;
+                    response = await fetch(url);
+                }
                 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log("Danh sách Models nhận được:", data);
+                    console.log(`Đã kết nối thành công! API Prefix: "${API_PREFIX}". Models:`, data);
 
                     if(data.models && Array.isArray(data.models) && data.models.length > 0) {
                         select.innerHTML = ''; // Xóa placeholder
@@ -203,14 +214,14 @@
                         });
                     } else {
                         console.warn("Server trả về danh sách model rỗng.");
-                        select.innerHTML = '<option value="" disabled>Danh sách model rỗng (Kiểm tra Backend)</option>';
+                        select.innerHTML = '<option value="" disabled>Danh sách model rỗng</option>';
                     }
                 } else {
                     throw new Error(`Lỗi kết nối Server (${response.status})`);
                 }
             } catch (error) {
                 console.error("Lỗi khi tải models:", error);
-                select.innerHTML = '<option value="gemini-3-flash-preview">gemini-3-flash-preview (Offline Mode)</option>';
+                select.innerHTML = '<option value="gemini-1.5-flash">gemini-1.5-flash (Offline Mode)</option>';
                 console.log("Đang sử dụng model fallback do lỗi kết nối.");
             }
         }
@@ -331,14 +342,18 @@
             formData.append('model', model);
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/convert`, {
+                // SỬ DỤNG API_PREFIX ĐÃ TỰ ĐỘNG PHÁT HIỆN
+                const endpoint = `${API_BASE_URL}${API_PREFIX}/convert`;
+                console.log("Calling Convert API:", endpoint);
+
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     body: formData
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || "Lỗi Server hoặc Model quá tải.");
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || `Lỗi Server (${response.status})`);
                 }
 
                 const data = await response.json();
