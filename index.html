@@ -251,7 +251,6 @@
             try {
                 // Xử lý URL an toàn
                 const baseUrl = API_BASE_URL.replace(/\/+$/, "");
-                // Sử dụng prefix hiện tại
                 const prefix = (typeof API_PREFIX !== 'undefined') ? API_PREFIX : '/api';
                 const endpoint = `${baseUrl}${prefix}/convert`;
 
@@ -315,7 +314,6 @@
             const email = localStorage.getItem('userEmail');
             const token = localStorage.getItem('authToken');
             
-            // Nếu chưa login thì không cần check
             if (!email || !token) return; 
 
             try {
@@ -323,7 +321,6 @@
                 formData.append('email', email);
                 formData.append('token', token);
                 
-                // Xử lý URL an toàn
                 const baseUrl = API_BASE_URL.replace(/\/+$/, "");
                 const prefix = (typeof API_PREFIX !== 'undefined') ? API_PREFIX : '/api';
                 const endpoint = `${baseUrl}${prefix}/check-session`;
@@ -334,15 +331,14 @@
                 });
 
                 if (!response.ok) {
-                    // Log lỗi chi tiết nếu gặp 422 (Unprocessable Entity)
+                    // Log lỗi 422 nếu có (nhưng không logout)
                     if (response.status === 422) {
                         const errText = await response.text();
-                        console.warn("Lỗi 422 khi check session (Backend từ chối dữ liệu):", errText);
-                        // Không logout để tránh phiền người dùng nếu chỉ là lỗi format
+                        console.warn("Lỗi 422 check session (Format data sai?):", errText);
                         return;
                     }
 
-                    // Chỉ logout nếu Server TRẢ LỜI RÕ RÀNG là 401 (Sai token/Phiên hết hạn)
+                    // Chỉ logout nếu Server TRẢ LỜI RÕ RÀNG là 401
                     if (response.status === 401) {
                         console.warn("Session check returned 401. Logging out...");
                         alert("Tài khoản của bạn đã được đăng nhập từ nơi khác (hoặc phiên hết hạn).");
@@ -350,7 +346,6 @@
                     }
                 }
             } catch (e) {
-                // Lỗi mạng (mất wifi...) -> Bỏ qua, không logout
                 console.log("Network error checking session, skipping...", e);
             }
         }, 10000); // 10 giây check 1 lần
