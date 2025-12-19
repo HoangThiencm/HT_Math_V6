@@ -44,11 +44,12 @@
                 <span class="group-label">Đầu vào</span>
                 <div class="space-y-3">
                     <!-- File Input -->
+                    <!-- [MODIFIED] Thêm .pdf vào accept -->
                     <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-slate-50" id="dropZone">
-                        <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="handleFileSelect(this)">
+                        <input type="file" id="fileInput" class="hidden" accept="image/*,.pdf" onchange="handleFileSelect(this)">
                         <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                        <p class="text-sm text-gray-500">Kéo thả ảnh hoặc <span class="text-blue-600 font-bold">Chọn file</span></p>
-                        <p class="text-xs text-gray-400 mt-1">(Hỗ trợ: PNG, JPG, JPEG)</p>
+                        <p class="text-sm text-gray-500">Kéo thả ảnh/PDF hoặc <span class="text-blue-600 font-bold">Chọn file</span></p>
+                        <p class="text-xs text-gray-400 mt-1">(Hỗ trợ: PNG, JPG, JPEG, PDF)</p>
                     </div>
 
                     <!-- Paste Clipboard -->
@@ -58,7 +59,14 @@
                     
                     <!-- Preview Image Thumbnail -->
                     <div id="imagePreviewContainer" class="hidden relative mt-2">
-                        <img id="imagePreview" class="w-full h-48 object-contain rounded border border-gray-200 bg-gray-100">
+                        <!-- Thẻ img cho ảnh -->
+                        <img id="imagePreview" class="w-full h-48 object-contain rounded border border-gray-200 bg-gray-100 hidden">
+                        <!-- Thẻ div cho PDF preview -->
+                        <div id="pdfPreview" class="w-full h-32 flex flex-col items-center justify-center bg-red-50 border border-red-200 rounded hidden text-red-600">
+                            <i class="fas fa-file-pdf text-4xl mb-2"></i>
+                            <span class="text-sm font-bold">Tài liệu PDF</span>
+                        </div>
+                        
                         <button onclick="clearImage()" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow hover:bg-red-600">&times;</button>
                         <p id="fileInfo" class="text-xs text-center text-gray-500 mt-1"></p>
                     </div>
@@ -71,10 +79,9 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Model:</label>
-                        <select id="modelSelect" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="gemini-1.5-flash">gemini-1.5-flash (Nhanh)</option>
-                            <option value="gemini-1.5-pro">gemini-1.5-pro (Chính xác cao)</option>
-                            <option value="gemini-2.0-flash-exp">gemini-2.0-flash-exp (Mới nhất)</option>
+                        <!-- [MODIFIED] Xóa hardcode options, sẽ load bằng JS -->
+                        <select id="modelSelect" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                            <option value="" disabled selected>Đang tải danh sách model...</option>
                         </select>
                     </div>
                     
@@ -124,6 +131,7 @@
                     <div id="loadingOverlay" class="absolute inset-0 bg-white bg-opacity-90 flex flex-col items-center justify-center z-10 hidden">
                         <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-3"></div>
                         <p class="text-sm text-blue-600 font-medium animate-pulse">Đang xử lý với Gemini AI...</p>
+                        <p class="text-xs text-gray-500 mt-2">(File PDF nhiều trang sẽ mất nhiều thời gian hơn)</p>
                     </div>
                     
                     <div class="flex h-full">
@@ -141,7 +149,6 @@
 
     <script>
         // === CẤU HÌNH API ===
-        // Thay link này bằng Link Hugging Face Space của bạn sau khi deploy xong Backend
         const API_BASE_URL = "https://hoangthiencm-giangbai.hf.space"; 
 
         // --- AUTH CHECK ---
@@ -151,6 +158,40 @@
         } else {
             document.getElementById('userEmail').textContent = localStorage.getItem('userEmail') || 'User';
         }
+
+        // --- LOAD MODELS TỪ API ---
+        async function loadModels() {
+            const select = document.getElementById('modelSelect');
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/models`);
+                if (response.ok) {
+                    const data = await response.json();
+                    select.innerHTML = ''; // Xóa placeholder
+                    
+                    if(data.models && data.models.length > 0) {
+                        data.models.forEach(model => {
+                            const option = document.createElement('option');
+                            option.value = model;
+                            option.textContent = model;
+                            select.appendChild(option);
+                        });
+                    } else {
+                        const option = document.createElement('option');
+                        option.text = "Không tìm thấy model nào";
+                        select.add(option);
+                    }
+                } else {
+                    throw new Error("Lỗi khi tải danh sách model");
+                }
+            } catch (error) {
+                console.error(error);
+                select.innerHTML = '<option value="gemini-1.5-flash">gemini-1.5-flash (Fallback)</option>';
+                // Fallback nếu API lỗi
+            }
+        }
+        
+        // Gọi hàm load models khi trang web tải xong
+        window.addEventListener('DOMContentLoaded', loadModels);
 
         function logout() {
             localStorage.clear();
@@ -209,21 +250,39 @@
         }
 
         function handleFile(file) {
-            if (!file.type.startsWith('image/')) {
-                alert("Chỉ hỗ trợ file ảnh!");
+            // [MODIFIED] Cho phép cả image và pdf
+            if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+                alert("Chỉ hỗ trợ file Ảnh và file PDF!");
                 return;
             }
             currentFile = file;
             
-            // Preview
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                document.getElementById('imagePreview').src = e.target.result;
-                document.getElementById('imagePreviewContainer').classList.remove('hidden');
-                document.getElementById('dropZone').classList.add('hidden');
-                document.getElementById('fileInfo').textContent = `File: ${file.name || "Clipboard Image"} (${(file.size/1024).toFixed(1)} KB)`;
-            };
-            reader.readAsDataURL(file);
+            // UI Update
+            document.getElementById('imagePreviewContainer').classList.remove('hidden');
+            document.getElementById('dropZone').classList.add('hidden');
+            document.getElementById('fileInfo').textContent = `File: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+
+            const imgPreview = document.getElementById('imagePreview');
+            const pdfPreview = document.getElementById('pdfPreview');
+
+            // [MODIFIED] Logic hiển thị preview cho từng loại file
+            if (file.type === 'application/pdf') {
+                // Nếu là PDF -> Hiện icon PDF, ẩn ảnh
+                imgPreview.classList.add('hidden');
+                pdfPreview.classList.remove('hidden');
+                pdfPreview.classList.add('flex'); // Dùng flex để căn giữa
+            } else {
+                // Nếu là Ảnh -> Hiện ảnh, ẩn icon PDF
+                pdfPreview.classList.add('hidden');
+                pdfPreview.classList.remove('flex');
+                imgPreview.classList.remove('hidden');
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imgPreview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
         }
 
         function clearImage() {
@@ -235,10 +294,11 @@
 
         // --- CORE LOGIC ---
         async function startConversion() {
-            if (!currentFile) return alert("Vui lòng chọn hoặc dán ảnh trước!");
+            if (!currentFile) return alert("Vui lòng chọn hoặc dán ảnh/PDF trước!");
 
             const mode = document.querySelector('input[name="mode"]:checked').value;
-            const model = document.getElementById('modelSelect').value;
+            const modelSelect = document.getElementById('modelSelect');
+            const model = modelSelect.value || "gemini-1.5-flash"; // Fallback nếu chưa load xong
             const btn = document.getElementById('btnConvert');
             const loading = document.getElementById('loadingOverlay');
 
@@ -251,22 +311,29 @@
             formData.append('model', model);
 
             try {
-                const response = await fetch(`${API_BASE_URL}/process`, {
+                // [MODIFIED] Endpoint sửa thành /api/convert để khớp với app.py
+                const response = await fetch(`${API_BASE_URL}/api/convert`, {
                     method: 'POST',
                     headers: {
-                        // Không cần Authorization cho endpoint process trong trường hợp này 
-                        // nhưng nếu muốn bảo mật thì thêm vào Header ở Backend
+                        // Thêm headers nếu cần thiết
                     },
                     body: formData
                 });
 
-                if (!response.ok) throw new Error("Lỗi Server hoặc Model quá tải.");
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || "Lỗi Server hoặc Model quá tải.");
+                }
 
                 const data = await response.json();
-                const text = data.text;
-
-                document.getElementById('resultText').value = text;
-                renderMarkdown(text);
+                
+                if (data.success) {
+                    const text = data.result;
+                    document.getElementById('resultText').value = text;
+                    renderMarkdown(text);
+                } else {
+                    throw new Error("Không nhận được kết quả.");
+                }
 
             } catch (error) {
                 alert("Lỗi: " + error.message);
@@ -285,8 +352,11 @@
         function renderMarkdown(text) {
             // Dùng marked để parse HTML
             markdownPreview.innerHTML = marked.parse(text);
-            // Ở đây nếu muốn hiển thị công thức đẹp, bạn cần thêm thư viện MathJax 
-            // và gọi MathJax.typeset()
+            
+            // Re-render MathJax
+            if (window.MathJax) {
+                MathJax.typesetPromise([markdownPreview]).catch((err) => console.log(err));
+            }
         }
 
         function copyText() {
@@ -300,13 +370,13 @@
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = "ket_qua.md"; // Tạm thời tải Markdown, muốn Docx cần thư viện nặng hơn client-side
+            a.download = "ket_qua.md"; 
             a.click();
             window.URL.revokeObjectURL(url);
         }
     </script>
     
-    <!-- Script hỗ trợ MathJax để hiển thị công thức nếu cần -->
+    <!-- Script hỗ trợ MathJax để hiển thị công thức -->
     <script>
         window.MathJax = {
             tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
