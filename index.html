@@ -94,7 +94,7 @@
         <div class="bg-white rounded-lg shadow-sm p-4 mb-4 flex justify-between items-center mt-4">
             <div class="flex items-center gap-3">
                 <i class="fas fa-cube text-blue-600 text-2xl"></i>
-                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v6.6 (3-Column Layout)</span></h1>
+                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v6.7 (Real Equation Word)</span></h1>
             </div>
             <div class="flex items-center gap-4">
                 <div class="text-right hidden sm:block">
@@ -236,13 +236,12 @@
             }
         }
 
-        // --- AUTH LOGIC (GIỮ NGUYÊN TỪ PHIÊN BẢN TRƯỚC) ---
+        // --- AUTH LOGIC ---
 
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('authToken');
             const email = localStorage.getItem('userEmail');
 
-            // Xử lý File Input change
             const fileInput = document.getElementById('file-upload');
             if(fileInput) {
                 fileInput.addEventListener('change', (e) => {
@@ -371,7 +370,7 @@
                 if (response.ok) {
                     const data = await response.json();
                     if (data.models && Array.isArray(data.models)) {
-                        select.innerHTML = ""; // Xóa option cũ
+                        select.innerHTML = "";
                         data.models.forEach(model => {
                             const opt = document.createElement('option');
                             opt.value = model;
@@ -386,7 +385,6 @@
                 console.error("Lỗi fetch models:", e);
                 log("Không thể tải Models, dùng mặc định.");
             }
-            // Fallback nếu lỗi
             select.innerHTML = `
                 <option value="gemini-2.5-flash">GEMINI-2.5-FLASH (Default)</option>
                 <option value="gemini-1.5-pro">GEMINI-1.5-PRO</option>
@@ -398,10 +396,9 @@
             document.getElementById('app-container').classList.remove('hidden');
             document.getElementById('user-display').innerText = email;
             document.getElementById('login-error').classList.add('hidden');
-            document.body.classList.remove('items-center', 'justify-center'); // Cho phép scroll khi content dài
+            document.body.classList.remove('items-center', 'justify-center');
             document.body.classList.add('items-start');
             
-            // Gọi hàm tải model khi vào app
             fetchModels();
         }
 
@@ -427,7 +424,6 @@
                 return;
             }
 
-            // UI State: Loading
             btn.disabled = true;
             btn.classList.add('hidden');
             loading.classList.remove('hidden');
@@ -454,21 +450,17 @@
                 if (data.success) {
                     currentMarkdown = data.result;
                     
-                    // Update Raw Text (Cột Giữa)
                     document.getElementById('result-text').value = currentMarkdown;
                     
-                    // Render Preview (Cột Phải)
                     const previewDiv = document.getElementById('result-preview');
                     previewDiv.innerHTML = marked.parse(currentMarkdown);
                     
-                    // Re-render MathJax
                     if (window.MathJax) {
                         MathJax.typesetPromise([previewDiv]).then(() => {
                             log("Render công thức toán hoàn tất.");
                         });
                     }
 
-                    // Show Buttons
                     document.getElementById('download-btn').classList.remove('hidden');
                     document.getElementById('copy-btn').classList.remove('hidden');
                     log("Chuyển đổi thành công!");
@@ -480,7 +472,6 @@
                 alert("Lỗi: " + error.message);
                 log("Lỗi: " + error.message);
             } finally {
-                // UI State: Reset
                 loading.classList.add('hidden');
                 btn.classList.remove('hidden');
                 btn.disabled = false;
