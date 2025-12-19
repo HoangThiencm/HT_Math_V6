@@ -44,7 +44,6 @@
                 <span class="group-label">Đầu vào</span>
                 <div class="space-y-3">
                     <!-- File Input -->
-                    <!-- [MODIFIED] Thêm .pdf vào accept -->
                     <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-slate-50" id="dropZone">
                         <input type="file" id="fileInput" class="hidden" accept="image/*,.pdf" onchange="handleFileSelect(this)">
                         <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
@@ -79,9 +78,8 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Model:</label>
-                        <!-- [MODIFIED] Xóa hardcode options, sẽ load bằng JS -->
                         <select id="modelSelect" class="w-full border border-gray-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                            <option value="" disabled selected>Đang tải danh sách model...</option>
+                            <option value="" disabled selected>Đang kết nối server...</option>
                         </select>
                     </div>
                     
@@ -149,12 +147,33 @@
 
     <script>
         // === CẤU HÌNH API ===
-        const API_BASE_URL = "https://hoangthiencm-giangbai.hf.space"; 
+        const API_BASE_URL = "https://hoangthiencm-ht-math-web-backend.hf.space"; 
+        
+        // --- HELPER CHUYỂN HƯỚNG AN TOÀN ---
+        function safeRedirect(url) {
+            try {
+                // Thử chuyển hướng
+                window.location.href = url;
+            } catch (e) {
+                console.warn("Không thể tự động chuyển hướng:", e);
+                // Nếu lỗi (do môi trường preview), hiển thị thông báo đè lên trang
+                document.body.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-screen bg-gray-100 text-slate-700 p-4 text-center">
+                        <i class="fas fa-lock text-4xl mb-4 text-red-500"></i>
+                        <h1 class="text-xl font-bold mb-2">Yêu cầu đăng nhập</h1>
+                        <p class="mb-4">Phiên đăng nhập đã hết hạn hoặc không hợp lệ.</p>
+                        <p class="text-sm text-gray-500 bg-white p-3 rounded border">
+                            Vui lòng mở file <b>${url}</b> thủ công để tiếp tục.
+                        </p>
+                    </div>
+                `;
+            }
+        }
 
         // --- AUTH CHECK ---
         const token = localStorage.getItem('authToken');
         if (!token) {
-            window.location.href = 'login.html';
+            safeRedirect('login.html');
         } else {
             document.getElementById('userEmail').textContent = localStorage.getItem('userEmail') || 'User';
         }
@@ -163,39 +182,44 @@
         async function loadModels() {
             const select = document.getElementById('modelSelect');
             try {
+                console.log("Đang gọi API lấy models:", `${API_BASE_URL}/api/models`);
                 const response = await fetch(`${API_BASE_URL}/api/models`);
+                
                 if (response.ok) {
                     const data = await response.json();
-                    select.innerHTML = ''; // Xóa placeholder
-                    
-                    if(data.models && data.models.length > 0) {
+                    console.log("Danh sách Models nhận được:", data);
+
+                    if(data.models && Array.isArray(data.models) && data.models.length > 0) {
+                        select.innerHTML = ''; // Xóa placeholder
+                        
                         data.models.forEach(model => {
-                            const option = document.createElement('option');
-                            option.value = model;
-                            option.textContent = model;
-                            select.appendChild(option);
+                            const cleanModel = model.trim();
+                            if(cleanModel) {
+                                const option = document.createElement('option');
+                                option.value = cleanModel;
+                                option.textContent = cleanModel;
+                                select.appendChild(option);
+                            }
                         });
                     } else {
-                        const option = document.createElement('option');
-                        option.text = "Không tìm thấy model nào";
-                        select.add(option);
+                        console.warn("Server trả về danh sách model rỗng.");
+                        select.innerHTML = '<option value="" disabled>Danh sách model rỗng (Kiểm tra Backend)</option>';
                     }
                 } else {
-                    throw new Error("Lỗi khi tải danh sách model");
+                    throw new Error(`Lỗi kết nối Server (${response.status})`);
                 }
             } catch (error) {
-                console.error(error);
-                select.innerHTML = '<option value="gemini-1.5-flash">gemini-1.5-flash (Fallback)</option>';
-                // Fallback nếu API lỗi
+                console.error("Lỗi khi tải models:", error);
+                select.innerHTML = '<option value="gemini-3-flash-preview">gemini-3-flash-preview (Offline Mode)</option>';
+                console.log("Đang sử dụng model fallback do lỗi kết nối.");
             }
         }
         
-        // Gọi hàm load models khi trang web tải xong
         window.addEventListener('DOMContentLoaded', loadModels);
 
         function logout() {
             localStorage.clear();
-            window.location.href = 'login.html';
+            safeRedirect('login.html');
         }
 
         // --- FILE HANDLING ---
@@ -250,7 +274,6 @@
         }
 
         function handleFile(file) {
-            // [MODIFIED] Cho phép cả image và pdf
             if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
                 alert("Chỉ hỗ trợ file Ảnh và file PDF!");
                 return;
@@ -265,14 +288,11 @@
             const imgPreview = document.getElementById('imagePreview');
             const pdfPreview = document.getElementById('pdfPreview');
 
-            // [MODIFIED] Logic hiển thị preview cho từng loại file
             if (file.type === 'application/pdf') {
-                // Nếu là PDF -> Hiện icon PDF, ẩn ảnh
                 imgPreview.classList.add('hidden');
                 pdfPreview.classList.remove('hidden');
-                pdfPreview.classList.add('flex'); // Dùng flex để căn giữa
+                pdfPreview.classList.add('flex');
             } else {
-                // Nếu là Ảnh -> Hiện ảnh, ẩn icon PDF
                 pdfPreview.classList.add('hidden');
                 pdfPreview.classList.remove('flex');
                 imgPreview.classList.remove('hidden');
@@ -298,7 +318,7 @@
 
             const mode = document.querySelector('input[name="mode"]:checked').value;
             const modelSelect = document.getElementById('modelSelect');
-            const model = modelSelect.value || "gemini-1.5-flash"; // Fallback nếu chưa load xong
+            const model = modelSelect.value || "gemini-1.5-flash"; 
             const btn = document.getElementById('btnConvert');
             const loading = document.getElementById('loadingOverlay');
 
@@ -311,12 +331,8 @@
             formData.append('model', model);
 
             try {
-                // [MODIFIED] Endpoint sửa thành /api/convert để khớp với app.py
                 const response = await fetch(`${API_BASE_URL}/api/convert`, {
                     method: 'POST',
-                    headers: {
-                        // Thêm headers nếu cần thiết
-                    },
                     body: formData
                 });
 
@@ -337,23 +353,20 @@
 
             } catch (error) {
                 alert("Lỗi: " + error.message);
+                console.error(error);
             } finally {
                 btn.disabled = false;
                 loading.classList.add('hidden');
             }
         }
 
-        // Render Markdown & LaTeX Preview
         const resultText = document.getElementById('resultText');
         const markdownPreview = document.getElementById('markdownPreview');
 
         resultText.addEventListener('input', () => renderMarkdown(resultText.value));
 
         function renderMarkdown(text) {
-            // Dùng marked để parse HTML
             markdownPreview.innerHTML = marked.parse(text);
-            
-            // Re-render MathJax
             if (window.MathJax) {
                 MathJax.typesetPromise([markdownPreview]).catch((err) => console.log(err));
             }
@@ -376,7 +389,6 @@
         }
     </script>
     
-    <!-- Script hỗ trợ MathJax để hiển thị công thức -->
     <script>
         window.MathJax = {
             tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
