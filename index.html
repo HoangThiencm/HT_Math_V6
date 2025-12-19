@@ -149,11 +149,14 @@
         async function loadModels() {
             const select = document.getElementById('modelSelect');
             try {
-                let url = `${API_BASE_URL}${API_PREFIX}/models`;
+                // Xử lý URL an toàn hơn để tránh //
+                const baseUrl = API_BASE_URL.replace(/\/+$/, "");
+                let url = `${baseUrl}${API_PREFIX}/models`;
+                
                 let response = await fetch(url);
                 if (response.status === 404) {
                     API_PREFIX = ""; 
-                    url = `${API_BASE_URL}${API_PREFIX}/models`;
+                    url = `${baseUrl}/models`;
                     response = await fetch(url);
                 }
                 if (response.ok) {
@@ -246,7 +249,13 @@
             formData.append('model', model);
 
             try {
-                const res = await fetch(`${API_BASE_URL}${API_PREFIX}/convert`, { method: 'POST', body: formData });
+                // Xử lý URL an toàn
+                const baseUrl = API_BASE_URL.replace(/\/+$/, "");
+                // Sử dụng prefix hiện tại
+                const prefix = (typeof API_PREFIX !== 'undefined') ? API_PREFIX : '/api';
+                const endpoint = `${baseUrl}${prefix}/convert`;
+
+                const res = await fetch(endpoint, { method: 'POST', body: formData });
                 if (!res.ok) {
                     if (res.status === 429) {
                         const err = await res.json();
@@ -284,7 +293,13 @@
             try {
                 const formData = new FormData();
                 formData.append("markdown_text", text);
-                const res = await fetch(`${API_BASE_URL}${API_PREFIX}/export-docx`, { method: "POST", body: formData });
+                
+                // Xử lý URL an toàn
+                const baseUrl = API_BASE_URL.replace(/\/+$/, "");
+                const prefix = (typeof API_PREFIX !== 'undefined') ? API_PREFIX : '/api';
+                const endpoint = `${baseUrl}${prefix}/export-docx`;
+
+                const res = await fetch(endpoint, { method: "POST", body: formData });
                 if (!res.ok) throw new Error("Lỗi tạo file Word");
                 const blob = await res.blob();
                 const url = URL.createObjectURL(blob);
@@ -308,23 +323,32 @@
                 formData.append('email', email);
                 formData.append('token', token);
                 
-                // Dùng API_PREFIX đã detect được hoặc mặc định là /api
-                // Đảm bảo không bị lỗi đường dẫn
+                // Xử lý URL an toàn
+                const baseUrl = API_BASE_URL.replace(/\/+$/, "");
                 const prefix = (typeof API_PREFIX !== 'undefined') ? API_PREFIX : '/api';
-                const endpoint = `${API_BASE_URL}${prefix}/check-session`;
+                const endpoint = `${baseUrl}${prefix}/check-session`;
                 
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     body: formData
                 });
 
-                // Chỉ logout nếu Server TRẢ LỜI RÕ RÀNG là 401 (Sai token/Phiên hết hạn)
-                if (response.status === 401) {
-                    console.warn("Session check returned 401. Logging out...");
-                    alert("Tài khoản của bạn đã được đăng nhập từ nơi khác (hoặc phiên hết hạn).");
-                    logout();
+                if (!response.ok) {
+                    // Log lỗi chi tiết nếu gặp 422 (Unprocessable Entity)
+                    if (response.status === 422) {
+                        const errText = await response.text();
+                        console.warn("Lỗi 422 khi check session (Backend từ chối dữ liệu):", errText);
+                        // Không logout để tránh phiền người dùng nếu chỉ là lỗi format
+                        return;
+                    }
+
+                    // Chỉ logout nếu Server TRẢ LỜI RÕ RÀNG là 401 (Sai token/Phiên hết hạn)
+                    if (response.status === 401) {
+                        console.warn("Session check returned 401. Logging out...");
+                        alert("Tài khoản của bạn đã được đăng nhập từ nơi khác (hoặc phiên hết hạn).");
+                        logout();
+                    }
                 }
-                // Nếu lỗi 404 (sai link API) hoặc 500 (lỗi server) -> Không logout để tránh phiền người dùng
             } catch (e) {
                 // Lỗi mạng (mất wifi...) -> Bỏ qua, không logout
                 console.log("Network error checking session, skipping...", e);
