@@ -88,12 +88,13 @@
     </div>
 
     <!-- MAIN APP DASHBOARD -->
-    <div id="app-container" class="hidden w-full max-w-6xl p-4 min-h-screen flex flex-col">
+    <!-- Đã mở rộng max-w để chứa đủ 3 cột -->
+    <div id="app-container" class="hidden w-full px-4 min-h-screen flex flex-col">
         <!-- Header -->
-        <div class="bg-white rounded-lg shadow-sm p-4 mb-4 flex justify-between items-center">
+        <div class="bg-white rounded-lg shadow-sm p-4 mb-4 flex justify-between items-center mt-4">
             <div class="flex items-center gap-3">
                 <i class="fas fa-cube text-blue-600 text-2xl"></i>
-                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v6.6</span></h1>
+                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v6.6 (3-Column Layout)</span></h1>
             </div>
             <div class="flex items-center gap-4">
                 <div class="text-right hidden sm:block">
@@ -106,30 +107,30 @@
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-grow">
+        <!-- Main Content Grid: 3 Columns -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-grow pb-4">
             
-            <!-- Left Column: Input -->
-            <div class="bg-white rounded-lg shadow-lg p-6 lg:col-span-1 flex flex-col h-full">
+            <!-- CỘT 1: INPUT & SETTINGS -->
+            <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col h-full">
                 <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
                     <i class="fas fa-file-import text-blue-500"></i> Tải file lên
                 </h3>
                 
                 <!-- File Drop Zone -->
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-gray-50 flex-grow flex flex-col justify-center items-center" id="drop-zone" onclick="document.getElementById('file-upload').click()">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-gray-50 flex-grow flex flex-col justify-center items-center max-h-60" id="drop-zone" onclick="document.getElementById('file-upload').click()">
                     <input type="file" id="file-upload" class="hidden" accept=".pdf,.png,.jpg,.jpeg">
                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
-                    <p class="text-gray-600 font-medium">Click hoặc kéo thả file vào đây</p>
-                    <p class="text-xs text-gray-400 mt-1">Hỗ trợ: PDF, PNG, JPG</p>
-                    <div id="file-name" class="mt-3 text-sm font-semibold text-blue-600 hidden"></div>
+                    <p class="text-gray-600 font-medium">Click hoặc kéo thả file</p>
+                    <p class="text-xs text-gray-400 mt-1">PDF, PNG, JPG</p>
+                    <div id="file-name" class="mt-3 text-sm font-semibold text-blue-600 hidden truncate w-full px-2"></div>
                 </div>
 
                 <!-- Settings -->
                 <div class="mt-6 space-y-4">
                     <div>
-                        <label class="block text-gray-700 text-xs font-bold mb-1">Mô hình AI (Tải từ Server)</label>
+                        <label class="block text-gray-700 text-xs font-bold mb-1">Mô hình AI</label>
                         <select id="model-select" class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:border-blue-500">
-                            <option value="gemini-2.5-flash">Đang tải danh sách model...</option>
+                            <option value="gemini-2.5-flash">Đang tải...</option>
                         </select>
                     </div>
                     <div>
@@ -141,52 +142,54 @@
                     </div>
                     
                     <button id="convert-btn" onclick="handleConvert()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded shadow transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <i class="fas fa-bolt"></i> Chuyển đổi ngay
+                        <i class="fas fa-bolt"></i> Chuyển đổi
                     </button>
                     <div id="loading" class="hidden text-center py-2">
                         <div class="loading-spinner mb-2"></div>
-                        <p class="text-xs text-gray-500">Đang xử lý, vui lòng đợi...</p>
+                        <p class="text-xs text-gray-500">Đang xử lý...</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Result -->
-            <div class="bg-white rounded-lg shadow-lg p-6 lg:col-span-2 flex flex-col h-full">
+            <!-- CỘT 2: RAW MARKDOWN (AI OUTPUT) -->
+            <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col h-full">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="font-bold text-gray-700 flex items-center gap-2">
-                        <i class="fas fa-poll-h text-green-500"></i> Kết quả
+                        <i class="fas fa-code text-orange-500"></i> Mã nguồn (AI)
                     </h3>
-                    <div class="flex gap-2">
-                         <button id="copy-btn" onclick="copyToClipboard()" class="hidden bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded text-xs font-bold transition">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
-                        <button id="download-btn" onclick="handleDownloadDocx()" class="hidden bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-xs font-bold transition shadow">
-                            <i class="fas fa-file-word"></i> Tải Word
-                        </button>
-                    </div>
+                    <button id="copy-btn" onclick="copyToClipboard()" class="hidden bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded text-xs font-bold transition">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
                 </div>
-
-                <!-- Tabs -->
-                <div class="flex border-b mb-4">
-                    <button class="px-4 py-2 text-sm font-medium text-blue-600 border-b-2 border-blue-600 focus:outline-none" id="tab-preview" onclick="switchTab('preview')">Xem trước</button>
-                    <button class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none" id="tab-raw" onclick="switchTab('raw')">Mã nguồn (Markdown)</button>
+                <div class="relative flex-grow border rounded bg-gray-900 overflow-hidden">
+                    <textarea id="result-text" class="w-full h-full p-4 font-mono text-sm resize-none focus:outline-none bg-gray-900 text-green-400" placeholder="Mã nguồn Markdown sẽ hiện ở đây..." readonly></textarea>
                 </div>
+            </div>
 
-                <!-- Result Area -->
-                <div class="relative flex-grow border rounded bg-gray-50 overflow-hidden">
-                    <textarea id="result-text" class="hidden w-full h-full p-4 font-mono text-sm resize-none focus:outline-none" readonly></textarea>
+            <!-- CỘT 3: RENDER PREVIEW & EXPORT -->
+            <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                        <i class="fas fa-eye text-green-500"></i> Xem trước
+                    </h3>
+                    <button id="download-btn" onclick="handleDownloadDocx()" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-bold transition shadow">
+                        <i class="fas fa-file-word"></i> Tải Word (Eq)
+                    </button>
+                </div>
+                <div class="relative flex-grow border rounded bg-white overflow-hidden">
                     <div id="result-preview" class="w-full h-full p-6 overflow-y-auto preview-content bg-white">
                         <div class="text-center text-gray-400 mt-20">
                             <i class="fas fa-file-alt text-4xl mb-3 opacity-20"></i>
-                            <p>Kết quả sẽ hiển thị ở đây</p>
+                            <p>Kết quả hiển thị</p>
                         </div>
                     </div>
                 </div>
             </div>
+
         </div>
         
         <!-- Status Log -->
-        <div id="status-log" class="mt-4 text-xs text-gray-400 font-mono h-20 overflow-y-auto bg-gray-900 p-2 rounded">
+        <div id="status-log" class="mt-auto mb-4 text-xs text-gray-400 font-mono h-16 overflow-y-auto bg-gray-900 p-2 rounded mx-1">
             > System ready...<br>
         </div>
     </div>
@@ -450,10 +453,11 @@
                 
                 if (data.success) {
                     currentMarkdown = data.result;
-                    // Update Raw Text
+                    
+                    // Update Raw Text (Cột Giữa)
                     document.getElementById('result-text').value = currentMarkdown;
                     
-                    // Render Preview
+                    // Render Preview (Cột Phải)
                     const previewDiv = document.getElementById('result-preview');
                     previewDiv.innerHTML = marked.parse(currentMarkdown);
                     
@@ -513,7 +517,7 @@
             } catch (e) {
                 alert(e.message);
             } finally {
-                btn.innerHTML = '<i class="fas fa-file-word"></i> Tải Word';
+                btn.innerHTML = '<i class="fas fa-file-word"></i> Tải Word (Eq)';
                 btn.disabled = false;
             }
         }
@@ -523,25 +527,6 @@
             navigator.clipboard.writeText(currentMarkdown).then(() => {
                 alert("Đã copy nội dung Markdown!");
             });
-        }
-
-        function switchTab(tab) {
-            const previewBtn = document.getElementById('tab-preview');
-            const rawBtn = document.getElementById('tab-raw');
-            const previewArea = document.getElementById('result-preview');
-            const rawArea = document.getElementById('result-text');
-
-            if (tab === 'preview') {
-                previewBtn.className = "px-4 py-2 text-sm font-medium text-blue-600 border-b-2 border-blue-600 focus:outline-none";
-                rawBtn.className = "px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none";
-                previewArea.classList.remove('hidden');
-                rawArea.classList.add('hidden');
-            } else {
-                rawBtn.className = "px-4 py-2 text-sm font-medium text-blue-600 border-b-2 border-blue-600 focus:outline-none";
-                previewBtn.className = "px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none";
-                rawArea.classList.remove('hidden');
-                previewArea.classList.add('hidden');
-            }
         }
     </script>
 </body>
