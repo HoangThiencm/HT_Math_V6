@@ -61,8 +61,8 @@
     </div>
 
     <script>
-        // === QUAN TRỌNG: Hãy dán link Server Hugging Face của bạn vào đây ===
-        const HF_API_URL = "https://hoangthiencm-ht-math-web-backend.hf.space"; 
+        // === QUAN TRỌNG: Link Server ===
+        const HF_API_URL = "https://hoangthiencm-ht-math-web-backend.hf.space/api"; 
 
         let isLoginMode = true;
 
@@ -70,7 +70,6 @@
             isLoginMode = (mode === 'login');
             const tabLogin = document.getElementById('tabLogin');
             const tabRegister = document.getElementById('tabRegister');
-            
             const btnSpan = document.querySelector('#submitBtn span');
             const msg = document.getElementById('message');
             msg.classList.add('hidden'); 
@@ -93,23 +92,21 @@
             const msg = document.getElementById('message');
             const btn = document.getElementById('submitBtn');
 
-            if(HF_API_URL.includes("YOUR_HUGGINGFACE")) {
-                msg.textContent = "Lỗi: Bạn chưa thay link API thật vào file login.html!";
-                msg.className = "text-center text-sm mt-4 text-red-500 block";
-                return;
-            }
-
             btn.disabled = true;
             btn.innerHTML = '<span><i class="fas fa-spinner fa-spin"></i> Đang xử lý...</span>';
 
-            // [FIX] Sửa đường dẫn thành /api/login và /api/register để khớp với app.py
-            const endpoint = isLoginMode ? "/api/login" : "/api/register";
+            const endpoint = isLoginMode ? "/login" : "/register";
             
             try {
+                // [FIX 422] SỬ DỤNG FORMDATA THAY VÌ JSON
+                const formData = new FormData();
+                formData.append('email', email);
+                formData.append('password', password);
+
                 const response = await fetch(`${HF_API_URL}${endpoint}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    // Không cần set 'Content-Type': 'multipart/form-data', fetch tự làm
+                    body: formData
                 });
 
                 const data = await response.json();
@@ -120,7 +117,7 @@
                         localStorage.setItem('userEmail', email);
                         window.location.href = 'index.html';
                     } else {
-                        msg.textContent = "Đăng ký thành công! Vui lòng chờ Admin duyệt tài khoản.";
+                        msg.textContent = "Đăng ký thành công! Vui lòng chờ Admin duyệt.";
                         msg.className = "text-center text-sm mt-4 text-yellow-600 bg-yellow-50 p-2 rounded block border border-yellow-200";
                         switchTab('login');
                     }
