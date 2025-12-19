@@ -172,8 +172,8 @@
                 }
 
                 // LƯU TOKEN VÀO LOCAL STORAGE
-                localStorage.setItem('app_token', data.token);
-                localStorage.setItem('app_email', data.email);
+                localStorage.setItem('authToken', data.token);
+                localStorage.setItem('userEmail', data.email);
 
                 log("Đăng nhập thành công. Token đã lưu.");
                 showApp(data.email);
@@ -189,7 +189,7 @@
 
         // 3. Xử lý Đăng xuất
         async function handleLogout() {
-            const email = localStorage.getItem('app_email');
+            const email = localStorage.getItem('userEmail');
             
             // Gọi API logout để xóa session trên server (tùy chọn)
             if (email) {
@@ -214,8 +214,8 @@
             log("Bắt đầu kiểm tra session định kỳ...");
             
             checkSessionInterval = setInterval(async () => {
-                const token = localStorage.getItem('app_token');
-                const email = localStorage.getItem('app_email');
+                const token = localStorage.getItem('authToken');
+                const email = localStorage.getItem('userEmail');
 
                 if (!token || !email) {
                     forceLogout();
@@ -259,8 +259,8 @@
         }
 
         function clearLocalAuth() {
-            localStorage.removeItem('app_token');
-            localStorage.removeItem('app_email');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userEmail');
         }
 
         // --- UI SWITCHING ---
@@ -280,4 +280,3 @@
     </script>
 </body>
 </html>
-
