@@ -69,6 +69,14 @@
             border-color: #3b82f6 !important;
             background-color: #eff6ff !important;
         }
+        
+        .preview-content img {
+            max-width: 100%;
+            height: auto;
+            display: inline-block;
+            margin: 5px 0;
+            border: 1px dashed #ccc; /* Viền nhẹ để biết là ảnh */
+        }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen">
@@ -110,7 +118,7 @@
         <div class="bg-white rounded-lg shadow-sm p-4 mb-4 flex justify-between items-center mt-4">
             <div class="flex items-center gap-3">
                 <i class="fas fa-cube text-blue-600 text-2xl"></i>
-                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v9.2 (Dynamic Models)</span></h1>
+                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v9.3 (Paste Insert Image)</span></h1>
             </div>
             <div class="flex items-center gap-4">
                 <div class="text-right hidden sm:block">
@@ -222,14 +230,14 @@
                 
                 <div class="relative flex-grow border rounded bg-white overflow-hidden flex flex-col">
                     <div class="bg-gray-50 px-3 py-1 text-[10px] text-gray-500 border-b flex justify-between select-none">
-                        <span><i class="fas fa-edit"></i> Chế độ sửa & nối tiếp</span>
-                        <span><i class="fas fa-plus-circle"></i> Ctrl+V vào đây để nối thêm</span>
+                        <span><i class="fas fa-edit"></i> Chế độ chèn ảnh trực quan</span>
+                        <span><i class="fas fa-plus-circle"></i> Ctrl+V để chèn hình minh họa</span>
                     </div>
                     <div id="result-preview" 
                          class="w-full h-full p-6 overflow-y-auto preview-content bg-white focus:outline-none" 
                          contenteditable="true"
                          spellcheck="false"
-                         title="Bạn có thể dán ảnh trực tiếp vào đây (Ctrl+V) để nối tiếp kết quả">
+                         title="Dán ảnh (Ctrl+V) vào đây để chèn hình minh họa trực tiếp">
                          
                         <div class="text-center text-gray-400 mt-20 select-none" id="preview-placeholder">
                             <i class="fas fa-file-alt text-4xl mb-3 opacity-20"></i>
@@ -658,15 +666,11 @@
         });
 
         // --- PASTE LOGIC (GLOBAL) ---
-        // Xử lý dán ở mọi nơi
         document.addEventListener('paste', async (event) => {
-            // 1. Kiểm tra xem có phải đang paste vào Input text bình thường không (VD: email, password, prompt)
-            // Nếu đúng thì không can thiệp, để trình duyệt xử lý
+            // 1. Kiểm tra input text thường
             if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
-                // Ngoại lệ: Nếu là result-text (Mã nguồn) thì vẫn cho paste text, nhưng paste ảnh thì chặn/chuyển hướng
                 if(event.target.id === 'result-text') {
-                    // Để mặc định xử lý text. Nếu là ảnh, nó sẽ không paste được gì vào textarea.
-                    // Ta có thể chặn paste ảnh ở đây nếu muốn.
+                     // Nếu dán vào Code Textarea thì cho phép
                 } else {
                     return; 
                 }
@@ -681,19 +685,17 @@
                 }
             }
 
-            if (!blob) return; // Không có ảnh thì thôi
+            if (!blob) return; 
             
-            event.preventDefault(); // Chặn hành vi dán mặc định
+            event.preventDefault(); 
 
             // 2. Phân biệt vị trí dán
-            // NẾU đang focus vào khung Preview (Cột 3) -> Chạy chế độ APPEND (Nối tiếp)
             const previewDiv = document.getElementById('result-preview');
             const isPreviewFocused = (document.activeElement === previewDiv) || previewDiv.contains(document.activeElement);
 
             if (isPreviewFocused) {
-                await handlePastedImageAppend(blob);
+                await handleInsertImageToPreview(blob);
             } else {
-                // NẾU không focus vào Preview (tức là đang ở Cột 1 hoặc Body) -> Chạy chế độ SET INPUT (Cột 1)
                 handlePastedImageToInput(blob);
             }
         });
@@ -704,95 +706,66 @@
             const fileNameDiv = document.getElementById('file-name');
             const dropZone = document.getElementById('drop-zone');
             
-            // Tạo file object giả lập từ blob
             const file = new File([blob], "pasted_image.png", { type: "image/png" });
             
-            // Gán vào input file
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
             fileInput.files = dataTransfer.files;
 
-            // Update UI Cột 1
             fileNameDiv.innerText = "Ảnh từ Clipboard (pasted_image.png)";
             fileNameDiv.classList.remove('hidden');
             document.getElementById('paste-hint').classList.add('hidden');
             
-            // Hiệu ứng Visual
             dropZone.classList.add('dropzone-active');
             setTimeout(() => dropZone.classList.remove('dropzone-active'), 500);
             
             log("Đã nhận ảnh từ Clipboard vào khung Tải file.");
         }
 
-        // Mode B: Dán vào Preview (Cột 3) - Chạy AI ngay và nối tiếp kết quả
-        async function handlePastedImageAppend(blob) {
-            if (!userApiKeysString) {
-                if(!confirm("Chưa có User API Key. Dùng key Server?")) return;
-            }
-
-            log("Paste vào Preview: Đang xử lý nối tiếp...");
-            const previewDiv = document.getElementById('result-preview');
+        // Mode B: Dán vào Preview (Cột 3) - CHÈN ẢNH TRỰC TIẾP (Insert Image)
+        async function handleInsertImageToPreview(blob) {
+            log("Paste vào Preview: Chèn ảnh minh họa...");
+            
+            // Ẩn placeholder nếu có
             const placeholder = document.getElementById('preview-placeholder');
             if(placeholder) placeholder.style.display = 'none';
 
-            const loadingId = "loading-" + Date.now();
-            const loadingHtml = `<div id="${loadingId}" class="my-4 p-4 bg-blue-50 border border-blue-200 rounded text-center text-sm text-blue-600 animate-pulse"><i class="fas fa-magic"></i> Đang đọc ảnh...</div>`;
-            previewDiv.insertAdjacentHTML('beforeend', loadingHtml);
-            // Scroll xuống
-            previewDiv.scrollTop = previewDiv.scrollHeight;
-            
-            try {
-                const formData = new FormData();
-                formData.append('file', blob, 'pasted_append.png');
-                formData.append('model', document.getElementById('model-select').value);
-                formData.append('mode', document.getElementById('mode-select').value);
-                if(userApiKeysString) formData.append('api_keys', userApiKeysString);
+            // Convert sang Base64
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result;
+                
+                // 1. Chèn hình ảnh vào Preview tại vị trí con trỏ (WYSIWYG)
+                document.getElementById('result-preview').focus();
+                const imgTag = `<img src="${base64}" style="max-width: 100%; display: block; margin: 10px auto;" />`;
+                document.execCommand('insertHTML', false, imgTag);
+                
+                // 2. Cập nhật vào Code Markdown (Append vào cuối) để xuất Word có hình
+                // Vì không thể biết chính xác vị trí trong Markdown tương ứng với HTML caret
+                // Nên ta nối vào cuối và báo user biết.
+                const textarea = document.getElementById('result-text');
+                const mdImage = `\n\n![Hinh_anh_minh_hoa](${base64})\n\n`;
+                
+                // Nếu textarea đang trống thì không cần xuống dòng nhiều
+                if (!textarea.value) textarea.value = mdImage;
+                else textarea.value += mdImage;
+                
+                currentMarkdown = textarea.value; // Update global var
+                
+                // 3. Tăng bộ đếm
+                pastedImageCount++;
+                const counterEl = document.getElementById('img-counter');
+                counterEl.innerHTML = `<i class="fas fa-images"></i> ${pastedImageCount}`;
+                counterEl.classList.remove('hidden');
+                
+                // Hiện nút download
+                document.getElementById('download-btn').classList.remove('hidden');
+                document.getElementById('copy-btn').classList.remove('hidden');
 
-                const response = await fetch(`${API_URL}/api/convert`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) throw new Error("Lỗi API");
-
-                const data = await response.json();
-                document.getElementById(loadingId)?.remove();
-
-                if (data.success) {
-                    // Tăng bộ đếm
-                    pastedImageCount++;
-                    const counterEl = document.getElementById('img-counter');
-                    counterEl.innerHTML = `<i class="fas fa-images"></i> ${pastedImageCount}`;
-                    counterEl.classList.remove('hidden');
-
-                    // Nối vào Code Textarea
-                    const textarea = document.getElementById('result-text');
-                    const separator = textarea.value.trim() ? '\n\n' : '';
-                    textarea.value += separator + data.result;
-                    currentMarkdown = textarea.value;
-
-                    // Nối vào Preview (Render HTML)
-                    const newHtml = marked.parse(data.result);
-                    const div = document.createElement('div');
-                    div.innerHTML = newHtml;
-                    div.className = "mt-4 pt-4 border-t border-dashed border-gray-300"; // Phân cách các lần paste
-                    previewDiv.appendChild(div);
-                    
-                    if (window.MathJax) MathJax.typesetPromise([div]).catch(err => console.log(err));
-                    
-                    previewDiv.scrollTop = previewDiv.scrollHeight;
-                    
-                    // Hiện nút download nếu chưa hiện
-                    document.getElementById('download-btn').classList.remove('hidden');
-                    document.getElementById('copy-btn').classList.remove('hidden');
-                    
-                    log(`Đã nối tiếp kết quả (Ảnh #${pastedImageCount}).`);
-                }
-
-            } catch (error) {
-                document.getElementById(loadingId)?.remove();
-                alert("Lỗi xử lý ảnh: " + error.message);
+                log(`Đã chèn ảnh #${pastedImageCount} vào vị trí con trỏ.`);
+                log("LƯU Ý: Mã ảnh cũng được thêm vào cuối khung 'Mã nguồn' để phục vụ xuất Word.");
             }
+            reader.readAsDataURL(blob);
         }
 
         function updatePreview(fullRender = false) {
