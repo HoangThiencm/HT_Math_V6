@@ -118,7 +118,7 @@
         <div class="bg-white rounded-lg shadow-sm p-4 mb-4 flex justify-between items-center mt-4">
             <div class="flex items-center gap-3">
                 <i class="fas fa-cube text-blue-600 text-2xl"></i>
-                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v9.3 (Paste Insert Image)</span></h1>
+                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v9.4 (Short Image URL)</span></h1>
             </div>
             <div class="flex items-center gap-4">
                 <div class="text-right hidden sm:block">
@@ -722,31 +722,43 @@
             log("Đã nhận ảnh từ Clipboard vào khung Tải file.");
         }
 
-        // Mode B: Dán vào Preview (Cột 3) - CHÈN ẢNH TRỰC TIẾP (Insert Image)
+        // Mode B: Dán vào Preview (Cột 3) - CHÈN ẢNH TRỰC TIẾP (Upload Server & Get URL)
         async function handleInsertImageToPreview(blob) {
-            log("Paste vào Preview: Chèn ảnh minh họa...");
+            log("Paste vào Preview: Đang upload ảnh lên Server để lấy link ngắn...");
             
             // Ẩn placeholder nếu có
             const placeholder = document.getElementById('preview-placeholder');
             if(placeholder) placeholder.style.display = 'none';
 
-            // Convert sang Base64
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const base64 = e.target.result;
+            // Tạo FormData
+            const formData = new FormData();
+            formData.append('file', blob);
+
+            try {
+                // Upload lên server
+                const response = await fetch(`${API_URL}/api/upload-image`, {
+                    method: 'POST',
+                    body: formData
+                });
                 
+                if (!response.ok) throw new Error("Upload thất bại");
+
+                const data = await response.json();
+                const shortPath = data.url; // "uploads/ten-file.png"
+                const fullUrl = `${API_URL}/${shortPath}`; // "https://domain.../uploads/ten-file.png"
+
                 // 1. Chèn hình ảnh vào Preview tại vị trí con trỏ (WYSIWYG)
+                // Sử dụng Full URL để hiển thị đúng trên mọi môi trường
                 document.getElementById('result-preview').focus();
-                const imgTag = `<img src="${base64}" style="max-width: 100%; display: block; margin: 10px auto;" />`;
+                const imgTag = `<img src="${fullUrl}" style="max-width: 100%; display: block; margin: 10px auto;" />`;
                 document.execCommand('insertHTML', false, imgTag);
                 
-                // 2. Cập nhật vào Code Markdown (Append vào cuối) để xuất Word có hình
-                // Vì không thể biết chính xác vị trí trong Markdown tương ứng với HTML caret
-                // Nên ta nối vào cuối và báo user biết.
+                // 2. Cập nhật vào Code Markdown (Append vào cuối)
+                // Sử dụng Short Path (Relative) để server (pypandoc) hiểu được khi xuất Word
+                // Vì server backend có thư mục "uploads/" ngay tại root.
                 const textarea = document.getElementById('result-text');
-                const mdImage = `\n\n![Hinh_anh_minh_hoa](${base64})\n\n`;
+                const mdImage = `\n\n![Minh_hoa](${shortPath})\n\n`;
                 
-                // Nếu textarea đang trống thì không cần xuống dòng nhiều
                 if (!textarea.value) textarea.value = mdImage;
                 else textarea.value += mdImage;
                 
@@ -762,10 +774,11 @@
                 document.getElementById('download-btn').classList.remove('hidden');
                 document.getElementById('copy-btn').classList.remove('hidden');
 
-                log(`Đã chèn ảnh #${pastedImageCount} vào vị trí con trỏ.`);
-                log("LƯU Ý: Mã ảnh cũng được thêm vào cuối khung 'Mã nguồn' để phục vụ xuất Word.");
+                log(`Đã chèn ảnh #${pastedImageCount} (URL ngắn).`);
+            } catch (error) {
+                alert("Lỗi upload ảnh: " + error.message);
+                log("Lỗi upload ảnh: " + error.message);
             }
-            reader.readAsDataURL(blob);
         }
 
         function updatePreview(fullRender = false) {
