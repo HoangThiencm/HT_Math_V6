@@ -110,7 +110,7 @@
         <div class="bg-white rounded-lg shadow-sm p-4 mb-4 flex justify-between items-center mt-4">
             <div class="flex items-center gap-3">
                 <i class="fas fa-cube text-blue-600 text-2xl"></i>
-                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v9.1 (Paste Logic)</span></h1>
+                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v9.2 (Dynamic Models)</span></h1>
             </div>
             <div class="flex items-center gap-4">
                 <div class="text-right hidden sm:block">
@@ -163,11 +163,9 @@
                 <!-- Settings -->
                 <div class="mt-4 space-y-3">
                     <div>
-                        <label class="block text-gray-700 text-xs font-bold mb-1">Mô hình AI</label>
+                        <label class="block text-gray-700 text-xs font-bold mb-1">Mô hình AI (Server)</label>
                         <select id="model-select" class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:border-blue-500">
-                            <option value="gemini-1.5-flash">GEMINI-1.5-FLASH (Nhanh nhất)</option>
-                            <option value="gemini-2.5-flash">GEMINI-2.5-FLASH (Mới)</option>
-                            <option value="gemini-1.5-pro">GEMINI-1.5-PRO (Thông minh)</option>
+                            <option value="gemini-1.5-flash">Đang tải danh sách...</option>
                         </select>
                     </div>
                     <div>
@@ -296,7 +294,18 @@
             }
         }
 
-        // --- KEY LOADER ---
+        // --- KEY LOADER (WITH PERSISTENCE) ---
+        // 1. Load keys from localStorage on startup
+        const savedKeys = localStorage.getItem('userApiKeys');
+        if (savedKeys) {
+            userApiKeysString = savedKeys;
+            const count = savedKeys.split(',').length;
+            document.getElementById('key-count').innerText = `Đã nạp ${count} keys (Đã lưu)`;
+            document.getElementById('key-count').className = "text-green-600 font-bold";
+            log(`Đã khôi phục ${count} API Keys từ phiên trước.`);
+        }
+
+        // 2. Load keys from file
         document.getElementById('key-file-upload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -308,6 +317,9 @@
                 
                 if (keys.length > 0) {
                     userApiKeysString = keys.join(',');
+                    // Save to localStorage
+                    localStorage.setItem('userApiKeys', userApiKeysString);
+                    
                     document.getElementById('key-count').innerText = `Đã nạp ${keys.length} keys`;
                     document.getElementById('key-count').className = "text-green-600 font-bold";
                     log(`Đã nạp thành công ${keys.length} API Keys.`);
@@ -317,6 +329,36 @@
             };
             reader.readAsText(file);
         });
+
+        // --- MODEL FETCHING (NEW) ---
+        async function fetchModels() {
+            const select = document.getElementById('model-select');
+            try {
+                const response = await fetch(`${API_URL}/api/models`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.models && Array.isArray(data.models)) {
+                        select.innerHTML = "";
+                        data.models.forEach(model => {
+                            const opt = document.createElement('option');
+                            opt.value = model;
+                            opt.text = model.toUpperCase();
+                            select.appendChild(opt);
+                        });
+                        log("Đã tải danh sách Models từ Server.");
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.error("Lỗi fetch models:", e);
+                log("Không thể tải Models, dùng mặc định.");
+            }
+            // Fallback
+            select.innerHTML = `
+                <option value="gemini-1.5-flash">GEMINI-1.5-FLASH</option>
+                <option value="gemini-2.5-flash">GEMINI-2.5-FLASH</option>
+            `;
+        }
 
         // --- AUTH LOGIC ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -451,6 +493,9 @@
             document.getElementById('login-error').classList.add('hidden');
             document.body.classList.remove('items-center', 'justify-center');
             document.body.classList.add('items-start');
+            
+            // Tải danh sách models từ server
+            fetchModels();
         }
         
         // --- RESET FEATURE ---
