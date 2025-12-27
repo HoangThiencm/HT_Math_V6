@@ -42,7 +42,6 @@
         .preview-content {
             font-family: 'Times New Roman', serif;
             line-height: 1.6;
-            outline: none; /* Bỏ viền xanh khi focus */
         }
         .preview-content table {
             border-collapse: collapse;
@@ -58,24 +57,6 @@
             padding-bottom: 12px;
             text-align: left;
             background-color: #f2f2f2;
-        }
-        .preview-content:empty:before {
-            content: attr(placeholder);
-            color: #ccc;
-        }
-        
-        /* Hiệu ứng focus cho Dropzone khi paste */
-        .dropzone-active {
-            border-color: #3b82f6 !important;
-            background-color: #eff6ff !important;
-        }
-        
-        .preview-content img {
-            max-width: 100%;
-            height: auto;
-            display: inline-block;
-            margin: 5px 0;
-            border: 1px dashed #ccc; /* Viền nhẹ để biết là ảnh */
         }
     </style>
 </head>
@@ -113,12 +94,13 @@
     </div>
 
     <!-- MAIN APP DASHBOARD -->
+    <!-- Đã mở rộng max-w để chứa đủ 3 cột -->
     <div id="app-container" class="hidden w-full px-4 min-h-screen flex flex-col">
         <!-- Header -->
         <div class="bg-white rounded-lg shadow-sm p-4 mb-4 flex justify-between items-center mt-4">
             <div class="flex items-center gap-3">
                 <i class="fas fa-cube text-blue-600 text-2xl"></i>
-                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v9.5 (Fix Upload Error)</span></h1>
+                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">v6.7 (Real Equation Word)</span></h1>
             </div>
             <div class="flex items-center gap-4">
                 <div class="text-right hidden sm:block">
@@ -137,43 +119,24 @@
             <!-- CỘT 1: INPUT & SETTINGS -->
             <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col h-full">
                 <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
-                    <i class="fas fa-cogs text-blue-500"></i> Cấu hình
+                    <i class="fas fa-file-import text-blue-500"></i> Tải file lên
                 </h3>
                 
-                <!-- API Key Loader -->
-                <div class="mb-4 bg-yellow-50 p-3 rounded border border-yellow-200">
-                    <label class="block text-gray-700 text-xs font-bold mb-2 flex justify-between">
-                        <span><i class="fas fa-key"></i> File API Keys (.txt)</span>
-                        <span id="key-count" class="text-red-500">Chưa nạp key</span>
-                    </label>
-                    <input type="file" id="key-file-upload" accept=".txt" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-1"/>
-                    <p class="text-[10px] text-gray-500 italic">* File txt chứa danh sách keys, mỗi key 1 dòng. An toàn tuyệt đối (Client-side).</p>
-                </div>
-
                 <!-- File Drop Zone -->
-                <div class="flex justify-between items-center mb-2">
-                    <label class="text-gray-700 text-xs font-bold">File PDF/Ảnh gốc</label>
-                    <button onclick="handleReset()" class="text-[10px] bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded transition" title="Xóa file và kết quả">
-                        <i class="fas fa-rotate-right"></i> Reset
-                    </button>
-                </div>
-                
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-gray-50 flex-grow flex flex-col justify-center items-center max-h-40 relative group" id="drop-zone" onclick="document.getElementById('file-upload').click()">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-gray-50 flex-grow flex flex-col justify-center items-center max-h-60" id="drop-zone" onclick="document.getElementById('file-upload').click()">
                     <input type="file" id="file-upload" class="hidden" accept=".pdf,.png,.jpg,.jpeg">
-                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2 group-hover:text-blue-500 transition"></i>
-                    <p class="text-gray-600 text-sm font-medium">Click chọn file</p>
-                    <div id="paste-hint" class="text-[10px] text-gray-400 mt-1 font-mono border border-gray-200 rounded px-2 py-0.5 bg-white">
-                        <i class="fas fa-paste"></i> Hoặc nhấn <b>Ctrl + V</b> để dán ảnh
-                    </div>
-                    <div id="file-name" class="mt-2 text-xs font-bold text-blue-600 hidden truncate w-full px-2 bg-blue-50 py-1 rounded"></div>
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-600 font-medium">Click hoặc kéo thả file</p>
+                    <p class="text-xs text-gray-400 mt-1">PDF, PNG, JPG</p>
+                    <div id="file-name" class="mt-3 text-sm font-semibold text-blue-600 hidden truncate w-full px-2"></div>
                 </div>
 
                 <!-- Settings -->
-                <div class="mt-4 space-y-3">
+                <div class="mt-6 space-y-4">
                     <div>
-                        <label class="block text-gray-700 text-xs font-bold mb-1">Mô hình AI (Server)</label>
+                        <label class="block text-gray-700 text-xs font-bold mb-1">Mô hình AI</label>
                         <select id="model-select" class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:border-blue-500">
-                            <option value="gemini-1.5-flash">Đang tải danh sách...</option>
+                            <option value="gemini-2.5-flash">Đang tải...</option>
                         </select>
                     </div>
                     <div>
@@ -184,12 +147,12 @@
                         </select>
                     </div>
                     
-                    <button id="convert-btn" onclick="handleConvert()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded shadow transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button id="convert-btn" onclick="handleConvert()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded shadow transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fas fa-bolt"></i> Chuyển đổi
                     </button>
                     <div id="loading" class="hidden text-center py-2">
                         <div class="loading-spinner mb-2"></div>
-                        <p class="text-xs text-gray-500">Đang xử lý (Vui lòng chờ)...</p>
+                        <p class="text-xs text-gray-500">Đang xử lý...</p>
                     </div>
                 </div>
             </div>
@@ -205,45 +168,36 @@
                     </button>
                 </div>
                 <div class="relative flex-grow border rounded bg-gray-900 overflow-hidden">
-                    <textarea id="result-text" class="w-full h-full p-4 font-mono text-sm resize-none focus:outline-none bg-gray-900 text-green-400" placeholder="Mã nguồn Markdown sẽ hiện ở đây..."></textarea>
+                    <textarea id="result-text" class="w-full h-full p-4 font-mono text-sm resize-none focus:outline-none bg-gray-900 text-green-400" placeholder="Mã nguồn Markdown sẽ hiện ở đây... (Có thể chỉnh sửa trực tiếp)"></textarea>
                 </div>
             </div>
 
             <!-- CỘT 3: RENDER PREVIEW & EXPORT -->
             <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col h-full">
                 <div class="flex justify-between items-center mb-4">
-                    <div class="flex items-center gap-2">
-                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
-                            <i class="fas fa-eye text-green-500"></i> Xem trước
-                        </h3>
-                        <span id="img-counter" class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded-full hidden border border-blue-200">
-                            <i class="fas fa-images"></i> 0
-                        </span>
-                    </div>
-                    
-                    <div class="flex gap-2">
-                        <button id="download-btn" onclick="handleDownloadDocx()" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-bold transition shadow">
-                            <i class="fas fa-file-word"></i> Tải Word
-                        </button>
-                    </div>
+                    <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                        <i class="fas fa-eye text-green-500"></i> Xem trước
+                    </h3>
+                    <button id="download-btn" onclick="handleDownloadDocx()" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-bold transition shadow">
+                        <i class="fas fa-file-word"></i> Tải Word (Eq)
+                    </button>
                 </div>
-                
-                <div class="relative flex-grow border rounded bg-white overflow-hidden flex flex-col">
-                    <div class="bg-gray-50 px-3 py-1 text-[10px] text-gray-500 border-b flex justify-between select-none">
-                        <span><i class="fas fa-edit"></i> Chế độ chèn ảnh trực quan</span>
-                        <span><i class="fas fa-plus-circle"></i> Ctrl+V để chèn hình minh họa</span>
-                    </div>
-                    <div id="result-preview" 
-                         class="w-full h-full p-6 overflow-y-auto preview-content bg-white focus:outline-none" 
-                         contenteditable="true"
-                         spellcheck="false"
-                         title="Dán ảnh (Ctrl+V) vào đây để chèn hình minh họa trực tiếp">
-                         
-                        <div class="text-center text-gray-400 mt-20 select-none" id="preview-placeholder">
+                <div class="relative flex-grow border rounded bg-white overflow-hidden">
+                    <div id="result-preview" class="w-full h-full p-6 overflow-y-auto preview-content bg-white" 
+                         style="min-height: 200px; outline: none;"
+                         tabindex="0"
+                         ondrop="handleDrop(event)" 
+                         ondragover="handleDragOver(event)"
+                         onpaste="handlePaste(event)"
+                         title="Click vào đây và dán ảnh (Ctrl+V) hoặc kéo thả ảnh vào đây">
+                        <div class="text-center text-gray-400 mt-20" id="preview-placeholder">
                             <i class="fas fa-file-alt text-4xl mb-3 opacity-20"></i>
-                            <p>Vùng xem trước</p>
+                            <p>Kết quả hiển thị</p>
                             <p class="text-xs mt-2 text-gray-300">
-                                Chưa có dữ liệu
+                                <i class="fas fa-mouse-pointer"></i> Click vào đây và dán ảnh (Ctrl+V)
+                            </p>
+                            <p class="text-xs text-gray-300">
+                                <i class="fas fa-hand-paper"></i> Hoặc kéo thả ảnh vào đây
                             </p>
                         </div>
                     </div>
@@ -277,8 +231,6 @@
         // --- GLOBAL VARIABLES ---
         let checkSessionInterval = null;
         let currentMarkdown = "";
-        let userApiKeysString = ""; // Lưu chuỗi keys
-        let pastedImageCount = 0; // Đếm số ảnh đã dán
 
         // --- UTILS ---
         function log(msg) {
@@ -302,77 +254,12 @@
             }
         }
 
-        // --- KEY LOADER (WITH PERSISTENCE) ---
-        // 1. Load keys from localStorage on startup
-        const savedKeys = localStorage.getItem('userApiKeys');
-        if (savedKeys) {
-            userApiKeysString = savedKeys;
-            const count = savedKeys.split(',').length;
-            document.getElementById('key-count').innerText = `Đã nạp ${count} keys (Đã lưu)`;
-            document.getElementById('key-count').className = "text-green-600 font-bold";
-            log(`Đã khôi phục ${count} API Keys từ phiên trước.`);
-        }
-
-        // 2. Load keys from file
-        document.getElementById('key-file-upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const text = e.target.result;
-                const keys = text.split('\n').map(k => k.trim()).filter(k => k.length > 0);
-                
-                if (keys.length > 0) {
-                    userApiKeysString = keys.join(',');
-                    // Save to localStorage
-                    localStorage.setItem('userApiKeys', userApiKeysString);
-                    
-                    document.getElementById('key-count').innerText = `Đã nạp ${keys.length} keys`;
-                    document.getElementById('key-count').className = "text-green-600 font-bold";
-                    log(`Đã nạp thành công ${keys.length} API Keys.`);
-                } else {
-                    alert("File không chứa API Key hợp lệ nào!");
-                }
-            };
-            reader.readAsText(file);
-        });
-
-        // --- MODEL FETCHING (NEW) ---
-        async function fetchModels() {
-            const select = document.getElementById('model-select');
-            try {
-                const response = await fetch(`${API_URL}/api/models`);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.models && Array.isArray(data.models)) {
-                        select.innerHTML = "";
-                        data.models.forEach(model => {
-                            const opt = document.createElement('option');
-                            opt.value = model;
-                            opt.text = model.toUpperCase();
-                            select.appendChild(opt);
-                        });
-                        log("Đã tải danh sách Models từ Server.");
-                        return;
-                    }
-                }
-            } catch (e) {
-                console.error("Lỗi fetch models:", e);
-                log("Không thể tải Models, dùng mặc định.");
-            }
-            // Fallback
-            select.innerHTML = `
-                <option value="gemini-1.5-flash">GEMINI-1.5-FLASH</option>
-                <option value="gemini-2.5-flash">GEMINI-2.5-FLASH</option>
-            `;
-        }
-
         // --- AUTH LOGIC ---
+
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('authToken');
             const email = localStorage.getItem('userEmail');
-            
+
             const fileInput = document.getElementById('file-upload');
             if(fileInput) {
                 fileInput.addEventListener('change', (e) => {
@@ -380,7 +267,6 @@
                     if (file) {
                         document.getElementById('file-name').innerText = file.name;
                         document.getElementById('file-name').classList.remove('hidden');
-                        document.getElementById('paste-hint').classList.add('hidden');
                     }
                 });
             }
@@ -494,6 +380,35 @@
             }
         }
 
+        // --- NEW: FETCH MODELS ---
+        async function fetchModels() {
+            const select = document.getElementById('model-select');
+            try {
+                const response = await fetch(`${API_URL}/api/models`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.models && Array.isArray(data.models)) {
+                        select.innerHTML = "";
+                        data.models.forEach(model => {
+                            const opt = document.createElement('option');
+                            opt.value = model;
+                            opt.text = model.toUpperCase();
+                            select.appendChild(opt);
+                        });
+                        log("Đã tải danh sách Models từ server.");
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.error("Lỗi fetch models:", e);
+                log("Không thể tải Models, dùng mặc định.");
+            }
+            select.innerHTML = `
+                <option value="gemini-2.5-flash">GEMINI-2.5-FLASH (Default)</option>
+                <option value="gemini-1.5-pro">GEMINI-1.5-PRO</option>
+            `;
+        }
+
         function showApp(email) {
             document.getElementById('login-container').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
@@ -502,41 +417,15 @@
             document.body.classList.remove('items-center', 'justify-center');
             document.body.classList.add('items-start');
             
-            // Tải danh sách models từ server
             fetchModels();
         }
-        
-        // --- RESET FEATURE ---
-        function handleReset() {
-            if(!confirm("Bạn có chắc muốn xóa toàn bộ file, kết quả và làm mới lại?")) return;
-            
-            // 1. Reset file input
-            const fileInput = document.getElementById('file-upload');
-            fileInput.value = "";
-            document.getElementById('file-name').innerText = "";
-            document.getElementById('file-name').classList.add('hidden');
-            document.getElementById('paste-hint').classList.remove('hidden');
 
-            // 2. Reset Textarea và Variables
-            currentMarkdown = "";
-            pastedImageCount = 0;
-            document.getElementById('result-text').value = "";
-            
-            // 3. Reset Preview
-            document.getElementById('result-preview').innerHTML = `
-                <div class="text-center text-gray-400 mt-20 select-none" id="preview-placeholder">
-                    <i class="fas fa-file-alt text-4xl mb-3 opacity-20"></i>
-                    <p>Vùng xem trước</p>
-                    <p class="text-xs mt-2 text-gray-300">Chưa có dữ liệu</p>
-                </div>`;
-            
-            // 4. Reset Counter & Buttons
-            document.getElementById('img-counter').classList.add('hidden');
-            document.getElementById('img-counter').innerHTML = '<i class="fas fa-images"></i> 0';
-            document.getElementById('download-btn').classList.add('hidden');
-            document.getElementById('copy-btn').classList.add('hidden');
-            
-            log("Đã Reset toàn bộ trạng thái.");
+        function showLogin() {
+            document.getElementById('app-container').classList.add('hidden');
+            document.getElementById('login-container').classList.remove('hidden');
+            document.getElementById('logout-modal').classList.add('hidden');
+            document.body.classList.add('items-center', 'justify-center');
+            document.body.classList.remove('items-start');
         }
 
         // --- CONVERT LOGIC ---
@@ -549,12 +438,8 @@
             const loading = document.getElementById('loading');
 
             if (!fileInput.files[0]) {
-                alert("Vui lòng chọn file hoặc dán ảnh vào khung Tải file trước!");
+                alert("Vui lòng chọn file trước!");
                 return;
-            }
-            
-            if (!userApiKeysString) {
-                if(!confirm("Bạn chưa nạp API Key. Tiếp tục với Server Key?")) return;
             }
 
             btn.disabled = true;
@@ -567,7 +452,6 @@
                 formData.append('file', fileInput.files[0]);
                 formData.append('model', modelSelect.value);
                 formData.append('mode', modeSelect.value);
-                if(userApiKeysString) formData.append('api_keys', userApiKeysString);
 
                 const response = await fetch(`${API_URL}/api/convert`, {
                     method: 'POST',
@@ -583,8 +467,9 @@
                 
                 if (data.success) {
                     currentMarkdown = data.result;
+                    
                     document.getElementById('result-text').value = currentMarkdown;
-                    updatePreview(true); 
+                    updatePreview();
                     
                     document.getElementById('download-btn').classList.remove('hidden');
                     document.getElementById('copy-btn').classList.remove('hidden');
@@ -604,8 +489,6 @@
         }
 
         async function handleDownloadDocx() {
-            currentMarkdown = document.getElementById('result-text').value;
-
             if (!currentMarkdown) {
                 alert("Không có nội dung để xuất!");
                 return;
@@ -613,7 +496,7 @@
             
             const btn = document.getElementById('download-btn');
             const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo...';
             btn.disabled = true;
 
             try {
@@ -626,13 +509,28 @@
                     body: formData
                 });
 
-                if (!response.ok) throw new Error("Lỗi tạo file Word");
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorMsg = "Lỗi tạo file Word";
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        errorMsg = errorData.detail || errorMsg;
+                    } catch (e) {
+                        errorMsg = errorText || errorMsg;
+                    }
+                    throw new Error(errorMsg);
+                }
 
                 const blob = await response.blob();
+                
+                if (blob.size === 0) {
+                    throw new Error("File Word rỗng, có thể do lỗi xử lý");
+                }
+                
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = "HT_MATH_OUTPUT.docx";
+                a.download = "Ket_qua_HT_MATH.docx";
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -640,7 +538,10 @@
                 log("Đã tải file Word thành công!");
 
             } catch (e) {
-                alert("Lỗi xuất Word: " + e.message);
+                const errorMsg = e.message || "Lỗi không xác định";
+                alert("Lỗi xuất Word: " + errorMsg);
+                log("Lỗi xuất Word: " + errorMsg);
+                console.error("Export Word error:", e);
             } finally {
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
@@ -648,149 +549,247 @@
         }
 
         function copyToClipboard() {
-            const text = document.getElementById('result-text').value;
-            if (!text) return;
-            navigator.clipboard.writeText(text).then(() => {
+            if (!currentMarkdown) return;
+            navigator.clipboard.writeText(currentMarkdown).then(() => {
                 alert("Đã copy nội dung Markdown!");
             });
         }
 
-        // --- PREVIEW SYNC ---
-        document.getElementById('result-text').addEventListener('input', (e) => {
-            currentMarkdown = e.target.value;
-            if(window.previewTimeout) clearTimeout(window.previewTimeout);
-            window.previewTimeout = setTimeout(() => {
-                 document.getElementById('result-preview').innerHTML = marked.parse(currentMarkdown);
-                 if (window.MathJax) MathJax.typesetPromise([document.getElementById('result-preview')]);
-            }, 500);
-        });
-
-        // --- PASTE LOGIC (GLOBAL) ---
-        document.addEventListener('paste', async (event) => {
-            // 1. Kiểm tra input text thường
-            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
-                if(event.target.id === 'result-text') {
-                     // Nếu dán vào Code Textarea thì cho phép
-                } else {
-                    return; 
-                }
-            }
-
-            const items = event.clipboardData.items;
-            let blob = null;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    blob = items[i].getAsFile();
-                    break;
-                }
-            }
-
-            if (!blob) return; 
-            
-            event.preventDefault(); 
-
-            // 2. Phân biệt vị trí dán
+        // --- PASTE IMAGE & DRAG & DROP ---
+        
+        // Cho phép chỉnh sửa textarea và tự động cập nhật preview
+        document.addEventListener('DOMContentLoaded', () => {
+            const textarea = document.getElementById('result-text');
             const previewDiv = document.getElementById('result-preview');
-            const isPreviewFocused = (document.activeElement === previewDiv) || previewDiv.contains(document.activeElement);
-
-            if (isPreviewFocused) {
-                await handleInsertImageToPreview(blob);
-            } else {
-                handlePastedImageToInput(blob);
-            }
-        });
-
-        // Mode A: Dán vào Input (Cột 1) - Chỉ nhận file, chờ bấm convert
-        function handlePastedImageToInput(blob) {
-            const fileInput = document.getElementById('file-upload');
-            const fileNameDiv = document.getElementById('file-name');
-            const dropZone = document.getElementById('drop-zone');
             
-            const file = new File([blob], "pasted_image.png", { type: "image/png" });
-            
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            fileInput.files = dataTransfer.files;
-
-            fileNameDiv.innerText = "Ảnh từ Clipboard (pasted_image.png)";
-            fileNameDiv.classList.remove('hidden');
-            document.getElementById('paste-hint').classList.add('hidden');
-            
-            dropZone.classList.add('dropzone-active');
-            setTimeout(() => dropZone.classList.remove('dropzone-active'), 500);
-            
-            log("Đã nhận ảnh từ Clipboard vào khung Tải file.");
-        }
-
-        // Mode B: Dán vào Preview (Cột 3) - CHÈN ẢNH TRỰC TIẾP (Upload Server & Get URL)
-        async function handleInsertImageToPreview(blob) {
-            log("Paste vào Preview: Đang upload ảnh lên Server để lấy link ngắn...");
-            
-            // Ẩn placeholder nếu có
-            const placeholder = document.getElementById('preview-placeholder');
-            if(placeholder) placeholder.style.display = 'none';
-
-            // Tạo FormData
-            const formData = new FormData();
-            formData.append('file', blob);
-
-            try {
-                // Upload lên server
-                const response = await fetch(`${API_URL}/api/upload-image`, {
-                    method: 'POST',
-                    body: formData
+            if (textarea) {
+                textarea.addEventListener('input', () => {
+                    currentMarkdown = textarea.value;
+                    updatePreview();
                 });
                 
-                if (response.status === 404) throw new Error("API upload chưa có trên server (Lỗi 404). Hãy cập nhật file app.py!");
-                if (!response.ok) throw new Error("Upload thất bại: " + response.statusText);
-
-                const data = await response.json();
-                const shortPath = data.url; // "uploads/ten-file.png"
-                const fullUrl = `${API_URL}/${shortPath}`; // "https://domain.../uploads/ten-file.png"
-
-                // 1. Chèn hình ảnh vào Preview tại vị trí con trỏ (WYSIWYG)
-                // Sử dụng Full URL để hiển thị đúng trên mọi môi trường
-                document.getElementById('result-preview').focus();
-                const imgTag = `<img src="${fullUrl}" style="max-width: 100%; display: block; margin: 10px auto;" />`;
-                document.execCommand('insertHTML', false, imgTag);
-                
-                // 2. Cập nhật vào Code Markdown (Append vào cuối)
-                // Sử dụng Short Path (Relative) để server (pypandoc) hiểu được khi xuất Word
-                // Vì server backend có thư mục "uploads/" ngay tại root.
-                const textarea = document.getElementById('result-text');
-                const mdImage = `\n\n![Minh_hoa](${shortPath})\n\n`;
-                
-                if (!textarea.value) textarea.value = mdImage;
-                else textarea.value += mdImage;
-                
-                currentMarkdown = textarea.value; // Update global var
-                
-                // 3. Tăng bộ đếm
-                pastedImageCount++;
-                const counterEl = document.getElementById('img-counter');
-                counterEl.innerHTML = `<i class="fas fa-images"></i> ${pastedImageCount}`;
-                counterEl.classList.remove('hidden');
-                
-                // Hiện nút download
-                document.getElementById('download-btn').classList.remove('hidden');
-                document.getElementById('copy-btn').classList.remove('hidden');
-
-                log(`Đã chèn ảnh #${pastedImageCount} (URL ngắn).`);
-            } catch (error) {
-                alert("Lỗi upload ảnh: " + error.message);
-                log("Lỗi upload ảnh: " + error.message);
+                // CHẶN paste ảnh vào textarea - chỉ cho phép text
+                textarea.addEventListener('paste', (event) => {
+                    const items = event.clipboardData.items;
+                    for (let i = 0; i < items.length; i++) {
+                        const item = items[i];
+                        if (item.type.indexOf('image') !== -1) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            // Hiển thị thông báo và chuyển focus sang preview
+                            const previewDiv = document.getElementById('result-preview');
+                            if (previewDiv) {
+                                previewDiv.focus();
+                                previewDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                            // Hiển thị tooltip
+                            const tooltip = document.createElement('div');
+                            tooltip.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #ff6b6b; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10000; font-size: 14px;';
+                            tooltip.innerHTML = '<i class="fas fa-info-circle"></i> Vui lòng dán ảnh vào khu vực <strong>Xem trước</strong>, không phải mã nguồn.';
+                            document.body.appendChild(tooltip);
+                            setTimeout(() => {
+                                tooltip.style.transition = 'opacity 0.3s';
+                                tooltip.style.opacity = '0';
+                                setTimeout(() => document.body.removeChild(tooltip), 300);
+                            }, 3000);
+                            return;
+                        }
+                    }
+                });
             }
-        }
+            
+            // Paste image vào preview area
+            if (previewDiv) {
+                previewDiv.addEventListener('paste', async (event) => {
+                    const items = event.clipboardData.items;
+                    for (let i = 0; i < items.length; i++) {
+                        const item = items[i];
+                        if (item.type.indexOf('image') !== -1) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            const blob = item.getAsFile();
+                            if (blob) {
+                                await handlePastedImage(blob);
+                            }
+                            return;
+                        }
+                    }
+                });
+            }
+            
+            // Paste image toàn cục - chỉ khi KHÔNG ở textarea
+            document.addEventListener('paste', async (event) => {
+                // Bỏ qua nếu đang ở textarea (đã được xử lý riêng - chặn paste ảnh)
+                if (event.target.tagName === 'TEXTAREA' && event.target.id === 'result-text') {
+                    return;
+                }
+                
+                // Bỏ qua nếu đang ở preview (đã được xử lý riêng)
+                if (event.target.id === 'result-preview') {
+                    return;
+                }
+                
+                // Xử lý paste ảnh ở các vùng khác (ví dụ: body, div khác)
+                const items = event.clipboardData.items;
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    if (item.type.indexOf('image') !== -1) {
+                        event.preventDefault();
+                        const blob = item.getAsFile();
+                        if (blob) {
+                            // Tự động focus vào preview area và paste
+                            const previewDiv = document.getElementById('result-preview');
+                            if (previewDiv) {
+                                previewDiv.focus();
+                            }
+                            await handlePastedImage(blob);
+                        }
+                        break;
+                    }
+                }
+            });
+        });
 
-        function updatePreview(fullRender = false) {
+        function updatePreview() {
             const previewDiv = document.getElementById('result-preview');
-            if(fullRender) {
+            if (!previewDiv) return;
+            
+            if (currentMarkdown && currentMarkdown.trim()) {
                 previewDiv.innerHTML = marked.parse(currentMarkdown);
                 const placeholder = document.getElementById('preview-placeholder');
                 if (placeholder) placeholder.style.display = 'none';
-                if (window.MathJax) MathJax.typesetPromise([previewDiv]);
+                
+                if (window.MathJax) {
+                    MathJax.typesetPromise([previewDiv]).catch((err) => {
+                        console.log('MathJax error:', err);
+                    });
+                }
+            } else {
+                const placeholder = document.getElementById('preview-placeholder');
+                if (placeholder) placeholder.style.display = 'block';
+            }
+        }
+
+        async function handlePastedImage(blob) {
+            if (!blob) {
+                log("Không có ảnh để xử lý");
+                return;
+            }
+            
+            log("Đang xử lý ảnh đã dán...");
+            
+            // Hiển thị loading
+            const loadingDiv = document.getElementById('loading');
+            const convertBtn = document.getElementById('convert-btn');
+            if (loadingDiv) loadingDiv.classList.remove('hidden');
+            if (convertBtn) {
+                convertBtn.disabled = true;
+                convertBtn.classList.add('hidden');
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', blob, 'pasted-image.png');
+                formData.append('model', document.getElementById('model-select').value);
+                formData.append('mode', document.getElementById('mode-select').value);
+
+                const response = await fetch(`${API_URL}/api/convert`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({ detail: "Lỗi không xác định" }));
+                    throw new Error(errData.detail || "Lỗi chuyển đổi ảnh");
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Nối kết quả vào markdown hiện tại (tại vị trí con trỏ nếu có)
+                    const textarea = document.getElementById('result-text');
+                    const existingText = textarea.value;
+                    const cursorPos = textarea.selectionStart || existingText.length;
+                    
+                    // Chèn vào vị trí con trỏ hoặc cuối cùng
+                    const beforeText = existingText.substring(0, cursorPos);
+                    const afterText = existingText.substring(cursorPos);
+                    const separator = (beforeText && afterText) ? '\n\n' : (beforeText || afterText) ? '\n\n' : '';
+                    const newText = beforeText + separator + data.result + (afterText ? '\n\n' + afterText : '');
+                    
+                    currentMarkdown = newText;
+                    textarea.value = currentMarkdown;
+                    
+                    // Đặt lại vị trí con trỏ
+                    const newCursorPos = cursorPos + separator.length + data.result.length;
+                    textarea.setSelectionRange(newCursorPos, newCursorPos);
+                    textarea.focus();
+                    
+                    updatePreview();
+                    
+                    document.getElementById('download-btn').classList.remove('hidden');
+                    document.getElementById('copy-btn').classList.remove('hidden');
+                    log("Đã xử lý ảnh đã dán thành công!");
+                } else {
+                    throw new Error("Không có kết quả trả về");
+                }
+
+            } catch (error) {
+                alert("Lỗi xử lý ảnh: " + error.message);
+                log("Lỗi: " + error.message);
+                console.error("Paste image error:", error);
+            } finally {
+                if (loadingDiv) loadingDiv.classList.add('hidden');
+                if (convertBtn) {
+                    convertBtn.disabled = false;
+                    convertBtn.classList.remove('hidden');
+                }
+            }
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.style.backgroundColor = '#f0f9ff';
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.style.backgroundColor = '';
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    handlePastedImage(file);
+                } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+                    // Xử lý PDF được kéo thả
+                    const fileInput = document.getElementById('file-upload');
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    fileInput.files = dataTransfer.files;
+                    document.getElementById('file-name').innerText = file.name;
+                    document.getElementById('file-name').classList.remove('hidden');
+                    handleConvert();
+                }
+            }
+        }
+
+        function handlePaste(event) {
+            // Xử lý paste trong preview area
+            const items = event.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item.type.indexOf('image') !== -1) {
+                    event.preventDefault();
+                    const blob = item.getAsFile();
+                    handlePastedImage(blob);
+                    break;
+                }
             }
         }
     </script>
 </body>
 </html>
+
