@@ -117,7 +117,6 @@
 
     <script>
         // CẤU HÌNH SERVER
-        // CẬP NHẬT: Đã sửa lại đường dẫn theo chuẩn Clean Architecture (/api/admin/...)
         const SERVER_URL = "https://hoangthiencm-ht-math-web-backend.hf.space";
         
         // Trạng thái
@@ -153,8 +152,8 @@
             log("Pinging server...");
             els.status.innerHTML = '<i class="fas fa-circle text-[8px] blink"></i> Connecting...';
             try {
-                // Gọi thử endpoint health
-                const res = await fetch(SERVER_URL + "/health"); 
+                // Gọi thử endpoint nhẹ nhất hoặc root để đánh thức server
+                const res = await fetch(SERVER_URL + "/"); 
                 if(res.ok) {
                     els.status.innerHTML = '<i class="fas fa-circle text-[8px] text-green-500"></i> Online';
                     els.status.className = "flex items-center gap-1 font-bold text-green-600";
@@ -177,14 +176,13 @@
             showError(""); // Clear error
 
             try {
-                // UPDATE: Gọi đúng đường dẫn API /api/admin/users
-                const apiPath = `${SERVER_URL}/api/admin/users`;
-                log(`Fetching users from: ${apiPath}`);
+                log(`Fetching users from: ${SERVER_URL}/admin/users`);
                 
+                // Set timeout 15s để tránh treo nếu server đang wake up
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-                const res = await fetch(apiPath, {
+                const res = await fetch(`${SERVER_URL}/admin/users`, {
                     headers: { 'key': key },
                     signal: controller.signal
                 });
@@ -192,16 +190,17 @@
 
                 if(!res.ok) {
                     if(res.status === 401) throw new Error("Sai Admin Key!");
-                    else if(res.status === 404) throw new Error("API Route không tồn tại.");
+                    else if(res.status === 404) throw new Error("API Route không tồn tại (/admin/users).");
                     else throw new Error(`Lỗi Server: ${res.status}`);
                 }
 
                 let data = await res.json();
-                
+                log("Data received: " + JSON.stringify(data).substring(0, 100) + "...");
+
                 // Normalization dữ liệu
                 let users = [];
                 if(Array.isArray(data)) users = data;
-                else if(data.users) users = data.users; // Backend trả về {"users": [...]}
+                else if(data.users) users = data.users;
                 else if(data.data) users = data.data;
 
                 // Lưu key
@@ -240,6 +239,7 @@
                 els.table.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-400">
                     <i class="fas fa-database text-3xl mb-2"></i><br>
                     Không có dữ liệu.<br>
+                    <span class="text-xs text-red-400">Nếu bạn chắc chắn có User, hãy chạy lệnh SQL Trigger trong Supabase!</span>
                 </td></tr>`;
                 return;
             }
@@ -271,8 +271,7 @@
         }
 
         async function actionUser(email, action, key) {
-            const actionText = action === 'approve' ? 'Duyệt' : 'Xóa';
-            if(!confirm(`Bạn chắc chắn muốn ${actionText} ${email}?`)) return;
+            if(!confirm(`Bạn chắc chắn muốn ${action} ${email}?`)) return;
             
             const btn = event.target;
             const originalText = btn.innerHTML;
@@ -280,9 +279,7 @@
             btn.disabled = true;
 
             try {
-                // UPDATE: Gọi đúng đường dẫn API /api/admin/approve hoặc /api/admin/delete
-                const apiPath = `${SERVER_URL}/api/admin/${action}`;
-                const res = await fetch(apiPath, {
+                const res = await fetch(`${SERVER_URL}/admin/${action}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ email, admin_key: key })
@@ -291,8 +288,7 @@
                 if(res.ok) {
                     loadUsers(); // Reload list
                 } else {
-                    const err = await res.json();
-                    alert("Thao tác thất bại: " + (err.detail || "Lỗi không xác định"));
+                    alert("Thao tác thất bại!");
                 }
             } catch(e) {
                 alert("Lỗi kết nối: " + e.message);
