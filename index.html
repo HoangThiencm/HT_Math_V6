@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,8 +21,15 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f3f4f6; }
-        .hidden { display: none; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .hidden {
+            display: none;
+        }
+
         .loading-spinner {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #3498db;
@@ -31,54 +39,84 @@
             animation: spin 1s linear infinite;
             margin: 0 auto;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
         /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
 
         .preview-content {
             font-family: 'Times New Roman', serif;
             line-height: 1.6;
-            outline: none; /* Bỏ viền xanh khi focus */
+            outline: none;
+            /* Bỏ viền xanh khi focus */
         }
+
         .preview-content table {
             border-collapse: collapse;
             width: 100%;
             margin-bottom: 1rem;
         }
-        .preview-content th, .preview-content td {
+
+        .preview-content th,
+        .preview-content td {
             border: 1px solid #ddd;
             padding: 8px;
         }
+
         .preview-content th {
             padding-top: 12px;
             padding-bottom: 12px;
             text-align: left;
             background-color: #f2f2f2;
         }
+
         .preview-content:empty:before {
             content: attr(placeholder);
             color: #ccc;
         }
-        
+
         /* Hiệu ứng focus cho Dropzone khi paste */
         .dropzone-active {
             border-color: #3b82f6 !important;
             background-color: #eff6ff !important;
         }
-        
+
         .preview-content img {
             max-width: 100%;
             height: auto;
             display: inline-block;
             margin: 5px 0;
-            border: 1px dashed #ccc; /* Viền nhẹ để biết là ảnh */
+            border: 1px dashed #ccc;
+            /* Viền nhẹ để biết là ảnh */
         }
     </style>
 </head>
+
 <body class="flex items-center justify-center min-h-screen">
 
     <!-- LOGIN FORM -->
@@ -88,23 +126,29 @@
             <h2 class="text-2xl font-bold text-gray-800">HT MATH WEB</h2>
             <p class="text-gray-500 text-sm">Đăng nhập để sử dụng công cụ</p>
         </div>
-        
-        <div id="login-error" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm"></div>
-        
+
+        <div id="login-error"
+            class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm"></div>
+
         <div class="mb-4">
             <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
-            <input type="email" id="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="Email của bạn">
+            <input type="email" id="email"
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                placeholder="Email của bạn">
         </div>
-        
+
         <div class="mb-6">
             <label class="block text-gray-700 text-sm font-bold mb-2">Mật khẩu</label>
-            <input type="password" id="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="*********">
+            <input type="password" id="password"
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                placeholder="*********">
         </div>
-        
-        <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-200">
+
+        <button onclick="handleLogin()"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-200">
             Đăng Nhập
         </button>
-        
+
         <div class="mt-4 text-center">
             <a href="login.html" class="text-blue-600 hover:text-blue-800 text-sm font-medium transition duration-200">
                 <i class="fas fa-user-plus"></i> Đăng ký tài khoản
@@ -118,14 +162,17 @@
         <div class="bg-white rounded-lg shadow-sm p-4 mb-4 flex justify-between items-center mt-4">
             <div class="flex items-center gap-3">
                 <i class="fas fa-cube text-blue-600 text-2xl"></i>
-                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span class="text-xs font-normal text-gray-500 ml-2">Tác giả: Hoàng Tấn Thiên - Phó Hiệu trưởng trường THCS Trần Phú, Xuân Đông, Đồng Nai</span></h1>
+                <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span
+                        class="text-xs font-normal text-gray-500 ml-2">Tác giả: Hoàng Tấn Thiên - Phó Hiệu trưởng trường
+                        THCS Trần Phú, Xuân Đông, Đồng Nai</span></h1>
             </div>
             <div class="flex items-center gap-4">
                 <div class="text-right hidden sm:block">
                     <p id="user-display" class="font-medium text-gray-700 text-sm"></p>
                     <p class="text-xs text-green-600"><i class="fas fa-circle text-[8px]"></i> Online</p>
                 </div>
-                <button onclick="handleLogout()" class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded text-sm font-medium transition">
+                <button onclick="handleLogout()"
+                    class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded text-sm font-medium transition">
                     <i class="fas fa-sign-out-alt"></i> Thoát
                 </button>
             </div>
@@ -133,58 +180,70 @@
 
         <!-- Main Content Grid: 3 Columns -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-grow pb-4">
-            
+
             <!-- CỘT 1: INPUT & SETTINGS -->
             <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col h-full">
                 <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
                     <i class="fas fa-cogs text-blue-500"></i> Cấu hình
                 </h3>
-                
+
                 <!-- API Key Loader -->
                 <div class="mb-4 bg-yellow-50 p-3 rounded border border-yellow-200">
                     <label class="block text-gray-700 text-xs font-bold mb-2 flex justify-between">
                         <span><i class="fas fa-key"></i> File API Keys (.txt)</span>
                         <span id="key-count" class="text-red-500">Chưa nạp key</span>
                     </label>
-                    <input type="file" id="key-file-upload" accept=".txt" class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-1"/>
-                    <p class="text-[10px] text-gray-500 italic">* File txt chứa danh sách keys, mỗi key 1 dòng. An toàn tuyệt đối (Client-side).</p>
+                    <input type="file" id="key-file-upload" accept=".txt"
+                        class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-1" />
+                    <p class="text-[10px] text-gray-500 italic">* File txt chứa danh sách keys, mỗi key 1 dòng. An toàn
+                        tuyệt đối (Client-side).</p>
                 </div>
 
                 <!-- File Drop Zone -->
                 <div class="flex justify-between items-center mb-2">
                     <label class="text-gray-700 text-xs font-bold">File PDF/Ảnh gốc</label>
-                    <button onclick="handleReset()" class="text-[10px] bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded transition" title="Xóa file và kết quả">
+                    <button onclick="handleReset()"
+                        class="text-[10px] bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded transition"
+                        title="Xóa file và kết quả">
                         <i class="fas fa-rotate-right"></i> Reset
                     </button>
                 </div>
-                
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-gray-50 flex-grow flex flex-col justify-center items-center max-h-40 relative group" id="drop-zone" onclick="document.getElementById('file-upload').click()">
+
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-gray-50 flex-grow flex flex-col justify-center items-center max-h-40 relative group"
+                    id="drop-zone" onclick="document.getElementById('file-upload').click()">
                     <input type="file" id="file-upload" class="hidden" accept=".pdf,.png,.jpg,.jpeg">
-                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2 group-hover:text-blue-500 transition"></i>
+                    <i
+                        class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2 group-hover:text-blue-500 transition"></i>
                     <p class="text-gray-600 text-sm font-medium">Click chọn file</p>
-                    <div id="paste-hint" class="text-[10px] text-gray-400 mt-1 font-mono border border-gray-200 rounded px-2 py-0.5 bg-white">
+                    <div id="paste-hint"
+                        class="text-[10px] text-gray-400 mt-1 font-mono border border-gray-200 rounded px-2 py-0.5 bg-white">
                         <i class="fas fa-paste"></i> Hoặc nhấn <b>Ctrl + V</b> để dán ảnh
                     </div>
-                    <div id="file-name" class="mt-2 text-xs font-bold text-blue-600 hidden truncate w-full px-2 bg-blue-50 py-1 rounded"></div>
+                    <div id="file-name"
+                        class="mt-2 text-xs font-bold text-blue-600 hidden truncate w-full px-2 bg-blue-50 py-1 rounded">
+                    </div>
                 </div>
 
                 <!-- Settings -->
                 <div class="mt-4 space-y-3">
                     <div>
                         <label class="block text-gray-700 text-xs font-bold mb-1">Mô hình AI (Server)</label>
-                        <select id="model-select" class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:border-blue-500">
+                        <select id="model-select"
+                            class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:border-blue-500">
                             <option value="gemini-1.5-flash">Đang tải danh sách...</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-gray-700 text-xs font-bold mb-1">Chế độ</label>
-                        <select id="mode-select" class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:border-blue-500">
+                        <select id="mode-select"
+                            class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:border-blue-500">
                             <option value="latex">Toán học (Latex $...$)</option>
                             <option value="text">Văn bản thường</option>
                         </select>
                     </div>
-                    
-                    <button id="convert-btn" onclick="handleConvert()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded shadow transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+
+                    <button id="convert-btn" onclick="handleConvert()"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded shadow transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fas fa-bolt"></i> Chuyển đổi
                     </button>
                     <div id="loading" class="hidden text-center py-2">
@@ -200,12 +259,15 @@
                     <h3 class="font-bold text-gray-700 flex items-center gap-2">
                         <i class="fas fa-code text-orange-500"></i> Mã nguồn (AI)
                     </h3>
-                    <button id="copy-btn" onclick="copyToClipboard()" class="hidden bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded text-xs font-bold transition">
+                    <button id="copy-btn" onclick="copyToClipboard()"
+                        class="hidden bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded text-xs font-bold transition">
                         <i class="fas fa-copy"></i> Copy
                     </button>
                 </div>
                 <div class="relative flex-grow border rounded bg-gray-900 overflow-hidden">
-                    <textarea id="result-text" class="w-full h-full p-4 font-mono text-sm resize-none focus:outline-none bg-gray-900 text-green-400" placeholder="Mã nguồn Markdown sẽ hiện ở đây..."></textarea>
+                    <textarea id="result-text"
+                        class="w-full h-full p-4 font-mono text-sm resize-none focus:outline-none bg-gray-900 text-green-400"
+                        placeholder="Mã nguồn Markdown sẽ hiện ở đây..."></textarea>
                 </div>
             </div>
 
@@ -216,29 +278,35 @@
                         <h3 class="font-bold text-gray-700 flex items-center gap-2">
                             <i class="fas fa-eye text-green-500"></i> Xem trước
                         </h3>
-                        <span id="img-counter" class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded-full hidden border border-blue-200">
+                        <span id="img-counter"
+                            class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded-full hidden border border-blue-200">
                             <i class="fas fa-images"></i> 0
                         </span>
                     </div>
-                    
+
                     <div class="flex gap-2">
-                        <button id="download-btn" onclick="handleDownloadDocx()" class="hidden bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-bold transition shadow">
+                        <button id="download-btn" onclick="handleDownloadDocx()"
+                            class="hidden bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-bold transition shadow">
                             <i class="fas fa-file-word"></i> Tải Word
+                        </button>
+                        <button id="download-excel-btn" onclick="handleDownloadExcel()"
+                            class="hidden bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-xs font-bold transition shadow">
+                            <i class="fas fa-file-excel"></i> Tải Excel
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="relative flex-grow border rounded bg-white overflow-hidden flex flex-col">
-                    <div class="bg-gray-50 px-3 py-1 text-[10px] text-gray-500 border-b flex justify-between select-none">
+                    <div
+                        class="bg-gray-50 px-3 py-1 text-[10px] text-gray-500 border-b flex justify-between select-none">
                         <span><i class="fas fa-edit"></i> Chế độ chèn ảnh trực quan</span>
                         <span><i class="fas fa-plus-circle"></i> Ctrl+V để chèn hình minh họa</span>
                     </div>
-                    <div id="result-preview" 
-                         class="w-full h-full p-6 overflow-y-auto preview-content bg-white focus:outline-none" 
-                         contenteditable="true"
-                         spellcheck="false"
-                         title="Dán ảnh (Ctrl+V) vào đây để chèn hình minh họa trực tiếp">
-                         
+                    <div id="result-preview"
+                        class="w-full h-full p-6 overflow-y-auto preview-content bg-white focus:outline-none"
+                        contenteditable="true" spellcheck="false"
+                        title="Dán ảnh (Ctrl+V) vào đây để chèn hình minh họa trực tiếp">
+
                         <div class="text-center text-gray-400 mt-20 select-none" id="preview-placeholder">
                             <i class="fas fa-file-alt text-4xl mb-3 opacity-20"></i>
                             <p>Vùng xem trước</p>
@@ -251,9 +319,10 @@
             </div>
 
         </div>
-        
+
         <!-- Status Log -->
-        <div id="status-log" class="mt-auto mb-4 text-xs text-gray-400 font-mono h-16 overflow-y-auto bg-gray-900 p-2 rounded mx-1">
+        <div id="status-log"
+            class="mt-auto mb-4 text-xs text-gray-400 font-mono h-16 overflow-y-auto bg-gray-900 p-2 rounded mx-1">
             > System ready...<br>
         </div>
     </div>
@@ -264,7 +333,8 @@
             <i class="fas fa-exclamation-triangle text-yellow-500 text-4xl mb-4"></i>
             <h3 class="text-lg font-bold mb-2">Phiên đăng nhập hết hạn</h3>
             <p class="text-gray-600 mb-4 text-sm">Tài khoản của bạn đã được đăng nhập trên một thiết bị khác.</p>
-            <button onclick="location.reload()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">
+            <button onclick="location.reload()"
+                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">
                 Đăng nhập lại
             </button>
         </div>
@@ -283,7 +353,7 @@
         // --- UTILS ---
         function log(msg) {
             const el = document.getElementById('status-log');
-            if(el) {
+            if (el) {
                 const time = new Date().toLocaleTimeString();
                 el.innerHTML += `> [${time}] ${msg}<br>`;
                 el.scrollTop = el.scrollHeight;
@@ -293,7 +363,7 @@
 
         function showError(msg) {
             const el = document.getElementById('login-error');
-            if(el) {
+            if (el) {
                 el.innerText = msg;
                 el.classList.remove('hidden');
                 setTimeout(() => el.classList.add('hidden'), 5000);
@@ -314,20 +384,20 @@
         }
 
         // 2. Load keys from file
-        document.getElementById('key-file-upload').addEventListener('change', function(e) {
+        document.getElementById('key-file-upload').addEventListener('change', function (e) {
             const file = e.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 const text = e.target.result;
                 const keys = text.split('\n').map(k => k.trim()).filter(k => k.length > 0);
-                
+
                 if (keys.length > 0) {
                     userApiKeysString = keys.join(',');
                     // Save to localStorage
                     localStorage.setItem('userApiKeys', userApiKeysString);
-                    
+
                     document.getElementById('key-count').innerText = `Đã nạp ${keys.length} keys`;
                     document.getElementById('key-count').className = "text-green-600 font-bold";
                     log(`Đã nạp thành công ${keys.length} API Keys.`);
@@ -372,9 +442,9 @@
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('authToken');
             const email = localStorage.getItem('userEmail');
-            
+
             const fileInput = document.getElementById('file-upload');
-            if(fileInput) {
+            if (fileInput) {
                 fileInput.addEventListener('change', (e) => {
                     const file = e.target.files[0];
                     if (file) {
@@ -450,7 +520,7 @@
 
         function startSessionCheck() {
             if (checkSessionInterval) clearInterval(checkSessionInterval);
-            
+
             checkSessionInterval = setInterval(async () => {
                 const token = localStorage.getItem('authToken');
                 const email = localStorage.getItem('userEmail');
@@ -478,14 +548,14 @@
                 } catch (error) {
                     console.log("Heartbeat error: " + error.message);
                 }
-            }, 10000); 
+            }, 10000);
         }
 
         function forceLogout(showModal = false) {
             if (checkSessionInterval) clearInterval(checkSessionInterval);
             localStorage.removeItem('authToken');
             localStorage.removeItem('userEmail');
-            
+
             if (showModal) {
                 document.getElementById('app-container').classList.add('hidden');
                 document.getElementById('logout-modal').classList.remove('hidden');
@@ -501,15 +571,15 @@
             document.getElementById('login-error').classList.add('hidden');
             document.body.classList.remove('items-center', 'justify-center');
             document.body.classList.add('items-start');
-            
+
             // Tải danh sách models từ server
             fetchModels();
         }
-        
+
         // --- RESET FEATURE ---
         function handleReset() {
-            if(!confirm("Bạn có chắc muốn xóa toàn bộ file, kết quả và làm mới lại?")) return;
-            
+            if (!confirm("Bạn có chắc muốn xóa toàn bộ file, kết quả và làm mới lại?")) return;
+
             // 1. Reset file input
             const fileInput = document.getElementById('file-upload');
             fileInput.value = "";
@@ -521,7 +591,7 @@
             currentMarkdown = "";
             pastedImageCount = 0;
             document.getElementById('result-text').value = "";
-            
+
             // 3. Reset Preview
             document.getElementById('result-preview').innerHTML = `
                 <div class="text-center text-gray-400 mt-20 select-none" id="preview-placeholder">
@@ -529,13 +599,14 @@
                     <p>Vùng xem trước</p>
                     <p class="text-xs mt-2 text-gray-300">Chưa có dữ liệu</p>
                 </div>`;
-            
+
             // 4. Reset Counter & Buttons
             document.getElementById('img-counter').classList.add('hidden');
             document.getElementById('img-counter').innerHTML = '<i class="fas fa-images"></i> 0';
             document.getElementById('download-btn').classList.add('hidden');
+            document.getElementById('download-excel-btn').classList.add('hidden');
             document.getElementById('copy-btn').classList.add('hidden');
-            
+
             log("Đã Reset toàn bộ trạng thái.");
         }
 
@@ -552,9 +623,9 @@
                 alert("Vui lòng chọn file hoặc dán ảnh vào khung Tải file trước!");
                 return;
             }
-            
+
             if (!userApiKeysString) {
-                if(!confirm("Bạn chưa nạp API Key. Tiếp tục với Server Key?")) return;
+                if (!confirm("Bạn chưa nạp API Key. Tiếp tục với Server Key?")) return;
             }
 
             btn.disabled = true;
@@ -567,7 +638,7 @@
                 formData.append('file', fileInput.files[0]);
                 formData.append('model', modelSelect.value);
                 formData.append('mode', modeSelect.value);
-                if(userApiKeysString) formData.append('api_keys', userApiKeysString);
+                if (userApiKeysString) formData.append('api_keys', userApiKeysString);
 
                 const response = await fetch(`${API_URL}/api/convert`, {
                     method: 'POST',
@@ -580,13 +651,14 @@
                 }
 
                 const data = await response.json();
-                
+
                 if (data.success) {
                     currentMarkdown = data.result;
                     document.getElementById('result-text').value = currentMarkdown;
-                    updatePreview(true); 
-                    
+                    updatePreview(true);
+
                     document.getElementById('download-btn').classList.remove('hidden');
+                    document.getElementById('download-excel-btn').classList.remove('hidden');
                     document.getElementById('copy-btn').classList.remove('hidden');
                     log("Chuyển đổi thành công!");
                 } else {
@@ -610,7 +682,7 @@
                 alert("Không có nội dung để xuất!");
                 return;
             }
-            
+
             const btn = document.getElementById('download-btn');
             const originalHTML = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -647,6 +719,50 @@
             }
         }
 
+        async function handleDownloadExcel() {
+            currentMarkdown = document.getElementById('result-text').value;
+
+            if (!currentMarkdown) {
+                alert("Không có nội dung để xuất!");
+                return;
+            }
+
+            const btn = document.getElementById('download-excel-btn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('markdown_text', currentMarkdown);
+
+                log("Đang gửi yêu cầu xuất Excel...");
+                const response = await fetch(`${API_URL}/api/export-excel`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error("Lỗi tạo file Excel");
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = "HT_MATH_OUTPUT.xlsx";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                log("Đã tải file Excel thành công!");
+
+            } catch (e) {
+                alert("Lỗi xuất Excel: " + e.message);
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
         function copyToClipboard() {
             const text = document.getElementById('result-text').value;
             if (!text) return;
@@ -658,10 +774,10 @@
         // --- PREVIEW SYNC ---
         document.getElementById('result-text').addEventListener('input', (e) => {
             currentMarkdown = e.target.value;
-            if(window.previewTimeout) clearTimeout(window.previewTimeout);
+            if (window.previewTimeout) clearTimeout(window.previewTimeout);
             window.previewTimeout = setTimeout(() => {
-                 document.getElementById('result-preview').innerHTML = marked.parse(currentMarkdown);
-                 if (window.MathJax) MathJax.typesetPromise([document.getElementById('result-preview')]);
+                document.getElementById('result-preview').innerHTML = marked.parse(currentMarkdown);
+                if (window.MathJax) MathJax.typesetPromise([document.getElementById('result-preview')]);
             }, 500);
         });
 
@@ -669,10 +785,10 @@
         document.addEventListener('paste', async (event) => {
             // 1. Kiểm tra input text thường
             if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
-                if(event.target.id === 'result-text') {
-                     // Nếu dán vào Code Textarea thì cho phép
+                if (event.target.id === 'result-text') {
+                    // Nếu dán vào Code Textarea thì cho phép
                 } else {
-                    return; 
+                    return;
                 }
             }
 
@@ -685,9 +801,9 @@
                 }
             }
 
-            if (!blob) return; 
-            
-            event.preventDefault(); 
+            if (!blob) return;
+
+            event.preventDefault();
 
             // 2. Phân biệt vị trí dán
             const previewDiv = document.getElementById('result-preview');
@@ -705,9 +821,9 @@
             const fileInput = document.getElementById('file-upload');
             const fileNameDiv = document.getElementById('file-name');
             const dropZone = document.getElementById('drop-zone');
-            
+
             const file = new File([blob], "pasted_image.png", { type: "image/png" });
-            
+
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
             fileInput.files = dataTransfer.files;
@@ -715,20 +831,20 @@
             fileNameDiv.innerText = "Ảnh từ Clipboard (pasted_image.png)";
             fileNameDiv.classList.remove('hidden');
             document.getElementById('paste-hint').classList.add('hidden');
-            
+
             dropZone.classList.add('dropzone-active');
             setTimeout(() => dropZone.classList.remove('dropzone-active'), 500);
-            
+
             log("Đã nhận ảnh từ Clipboard vào khung Tải file.");
         }
 
         // Mode B: Dán vào Preview (Cột 3) - CHÈN ẢNH TRỰC TIẾP (Upload Server & Get URL)
         async function handleInsertImageToPreview(blob) {
             log("Paste vào Preview: Đang upload ảnh lên Server để lấy link ngắn...");
-            
+
             // Ẩn placeholder nếu có
             const placeholder = document.getElementById('preview-placeholder');
-            if(placeholder) placeholder.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'none';
 
             // Tạo FormData
             const formData = new FormData();
@@ -740,7 +856,7 @@
                     method: 'POST',
                     body: formData
                 });
-                
+
                 if (response.status === 404) throw new Error("API upload chưa có trên server (Lỗi 404). Hãy cập nhật file app.py!");
                 if (!response.ok) throw new Error("Upload thất bại: " + response.statusText);
 
@@ -753,26 +869,27 @@
                 document.getElementById('result-preview').focus();
                 const imgTag = `<img src="${fullUrl}" style="max-width: 100%; display: block; margin: 10px auto;" />`;
                 document.execCommand('insertHTML', false, imgTag);
-                
+
                 // 2. Cập nhật vào Code Markdown (Append vào cuối)
                 // Sử dụng Short Path (Relative) để server (pypandoc) hiểu được khi xuất Word
                 // Vì server backend có thư mục "uploads/" ngay tại root.
                 const textarea = document.getElementById('result-text');
                 const mdImage = `\n\n![Minh_hoa](${shortPath})\n\n`;
-                
+
                 if (!textarea.value) textarea.value = mdImage;
                 else textarea.value += mdImage;
-                
+
                 currentMarkdown = textarea.value; // Update global var
-                
+
                 // 3. Tăng bộ đếm
                 pastedImageCount++;
                 const counterEl = document.getElementById('img-counter');
                 counterEl.innerHTML = `<i class="fas fa-images"></i> ${pastedImageCount}`;
                 counterEl.classList.remove('hidden');
-                
+
                 // Hiện nút download
                 document.getElementById('download-btn').classList.remove('hidden');
+                document.getElementById('download-excel-btn').classList.remove('hidden');
                 document.getElementById('copy-btn').classList.remove('hidden');
 
                 log(`Đã chèn ảnh #${pastedImageCount} (URL ngắn).`);
@@ -784,7 +901,7 @@
 
         function updatePreview(fullRender = false) {
             const previewDiv = document.getElementById('result-preview');
-            if(fullRender) {
+            if (fullRender) {
                 previewDiv.innerHTML = marked.parse(currentMarkdown);
                 const placeholder = document.getElementById('preview-placeholder');
                 if (placeholder) placeholder.style.display = 'none';
@@ -793,5 +910,5 @@
         }
     </script>
 </body>
-</html>
 
+</html>
