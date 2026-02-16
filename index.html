@@ -21,16 +21,9 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
             font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            background-color: #f3f4f6;
         }
 
         .hidden {
@@ -38,8 +31,8 @@
         }
 
         .loading-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid #fff;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -57,15 +50,6 @@
             }
         }
 
-        /* Glass Card Effect */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
@@ -73,22 +57,21 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
+            background: #f1f1f1;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: rgba(102, 126, 234, 0.5);
+            background: #888;
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(102, 126, 234, 0.8);
+            background: #555;
         }
 
         .preview-content {
             font-family: 'Times New Roman', serif;
             line-height: 1.6;
-            outline: none;
         }
 
         .preview-content table {
@@ -109,53 +92,13 @@
             text-align: left;
             background-color: #f2f2f2;
         }
-
-        .preview-content:empty:before {
-            content: attr(placeholder);
-            color: #ccc;
-        }
-
-        .dropzone-active {
-            border-color: #667eea !important;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)) !important;
-        }
-
-        .preview-content img {
-            max-width: 100%;
-            height: auto;
-            display: inline-block;
-            margin: 5px 0;
-            border: 1px dashed #ccc;
-        }
-
-        /* Tab Styling */
-        .tab-btn {
-            padding: 10px 20px;
-            border: none;
-            background: rgba(255, 255, 255, 0.2);
-            color: #666;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .tab-btn.active {
-            background: white;
-            color: #667eea;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .tab-btn:hover:not(.active) {
-            background: rgba(255, 255, 255, 0.3);
-        }
     </style>
 </head>
 
-<body class="flex items-center justify-center min-h-screen p-4">
+<body class="flex items-center justify-center min-h-screen">
 
     <!-- LOGIN FORM -->
-    <div id="login-container" class="glass-card p-8 w-full max-w-md">
+    <div id="login-container" class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <div class="text-center mb-6">
             <i class="fas fa-cube text-blue-600 text-4xl mb-2"></i>
             <h2 class="text-2xl font-bold text-gray-800">HT MATH WEB</h2>
@@ -180,26 +123,20 @@
         </div>
 
         <button onclick="handleLogin()"
-            class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-200">
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-200">
             Đăng Nhập
         </button>
-
-        <div class="mt-4 text-center">
-            <a href="login.html" class="text-blue-600 hover:text-blue-800 text-sm font-medium transition duration-200">
-                <i class="fas fa-user-plus"></i> Đăng ký tài khoản
-            </a>
-        </div>
     </div>
 
     <!-- MAIN APP DASHBOARD -->
+    <!-- Đã mở rộng max-w để chứa đủ 3 cột -->
     <div id="app-container" class="hidden w-full px-4 min-h-screen flex flex-col">
         <!-- Header -->
-        <div class="glass-card p-4 mb-4 flex justify-between items-center mt-4">
+        <div class="bg-white rounded-lg shadow-sm p-4 mb-4 flex justify-between items-center mt-4">
             <div class="flex items-center gap-3">
                 <i class="fas fa-cube text-blue-600 text-2xl"></i>
                 <h1 class="text-xl font-bold text-gray-800">HT MATH WEB <span
-                        class="text-xs font-normal text-gray-500 ml-2">Tác giả: Hoàng Tấn Thiên - Phó Hiệu trưởng trường
-                        THCS Trần Phú, Xuân Đông, Đồng Nai</span></h1>
+                        class="text-xs font-normal text-gray-500 ml-2">v6.7 (Real Equation Word)</span></h1>
             </div>
             <div class="flex items-center gap-4">
                 <div class="text-right hidden sm:block">
@@ -213,485 +150,116 @@
             </div>
         </div>
 
-        <!-- Tab Navigation -->
-        <div class="glass-card p-2 mb-4">
-            <div class="flex gap-2">
-                <button id="tab-ocr" class="tab-btn active" onclick="switchTab('ocr')">
-                    📝 OCR Chuyển đổi
-                </button>
-                <button id="tab-pdf" class="tab-btn" onclick="switchTab('pdf')">
-                    📄 Công cụ PDF
-                </button>
-                <button id="tab-word" class="tab-btn" onclick="switchTab('word')">
-                    📝 Công cụ Word
-                </button>
+        <!-- Main Content Grid: 3 Columns -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-grow pb-4">
+
+            <!-- CỘT 1: INPUT & SETTINGS -->
+            <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col h-full">
+                <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
+                    <i class="fas fa-file-import text-blue-500"></i> Tải file lên
+                </h3>
+
+                <!-- File Drop Zone -->
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-gray-50 flex-grow flex flex-col justify-center items-center max-h-60"
+                    id="drop-zone" onclick="document.getElementById('file-upload').click()">
+                    <input type="file" id="file-upload" class="hidden" accept=".pdf,.png,.jpg,.jpeg">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-600 font-medium">Click hoặc kéo thả file</p>
+                    <p class="text-xs text-gray-400 mt-1">PDF, PNG, JPG</p>
+                    <div id="file-name" class="mt-3 text-sm font-semibold text-blue-600 hidden truncate w-full px-2">
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="mt-6 space-y-4">
+                    <div>
+                        <label class="block text-gray-700 text-xs font-bold mb-1">Mô hình AI</label>
+                        <select id="model-select"
+                            class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:border-blue-500">
+                            <option value="gemini-2.5-flash">Đang tải...</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-xs font-bold mb-1">Chế độ</label>
+                        <select id="mode-select"
+                            class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:border-blue-500">
+                            <option value="latex">Toán học (Latex $...$)</option>
+                            <option value="text">Văn bản thường</option>
+                        </select>
+                    </div>
+
+                    <button id="convert-btn" onclick="handleConvert()"
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded shadow transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-bolt"></i> Chuyển đổi
+                    </button>
+                    <div id="loading" class="hidden text-center py-2">
+                        <div class="loading-spinner mb-2"></div>
+                        <p class="text-xs text-gray-500">Đang xử lý...</p>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- Tab Content: OCR (Existing - Wrapped) -->
-        <div id="content-ocr" class="tab-content">
-            <!-- Main Content Grid: 3 Columns -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-grow pb-4">
-
-                <!-- CỘT 1: INPUT & SETTINGS -->
-                <div class="glass-card p-6 flex flex-col h-full">
-                    <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
-                        <i class="fas fa-cogs text-blue-500"></i> Cấu hình
+            <!-- CỘT 2: RAW MARKDOWN (AI OUTPUT) -->
+            <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                        <i class="fas fa-code text-orange-500"></i> Mã nguồn (AI)
                     </h3>
+                    <button id="copy-btn" onclick="copyToClipboard()"
+                        class="hidden bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded text-xs font-bold transition">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+                <div class="relative flex-grow border rounded bg-gray-900 overflow-hidden">
+                    <textarea id="result-text"
+                        class="w-full h-full p-4 font-mono text-sm resize-none focus:outline-none bg-gray-900 text-green-400"
+                        placeholder="Mã nguồn Markdown sẽ hiện ở đây... (Có thể chỉnh sửa trực tiếp)"></textarea>
+                </div>
+            </div>
 
-                    <!-- API Key Loader -->
-                    <div class="mb-4 bg-yellow-50 p-3 rounded border border-yellow-200">
-                        <label class="block text-gray-700 text-xs font-bold mb-2 flex justify-between">
-                            <span><i class="fas fa-key"></i> File API Keys (.txt)</span>
-                            <span id="key-count" class="text-red-500">Chưa nạp key</span>
-                        </label>
-                        <input type="file" id="key-file-upload" accept=".txt"
-                            class="block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-1" />
-                        <p class="text-[10px] text-gray-500 italic">* File txt chứa danh sách keys, mỗi key 1 dòng. An
-                            toàn
-                            tuyệt đối (Client-side).</p>
-                    </div>
-
-                    <!-- File Drop Zone -->
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="text-gray-700 text-xs font-bold">File PDF/Ảnh gốc</label>
-                        <button onclick="handleReset()"
-                            class="text-[10px] bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded transition"
-                            title="Xóa file và kết quả">
-                            <i class="fas fa-rotate-right"></i> Reset
+            <!-- CỘT 3: RENDER PREVIEW & EXPORT -->
+            <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                        <i class="fas fa-eye text-green-500"></i> Xem trước
+                    </h3>
+                    <div class="flex gap-2">
+                        <button id="download-btn" onclick="handleDownloadDocx()"
+                            class="hidden bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-bold transition shadow">
+                            <i class="fas fa-file-word"></i> Tải Word (Eq)
+                        </button>
+                        <button id="download-excel-btn" onclick="handleDownloadExcel()"
+                            class="hidden bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-xs font-bold transition shadow">
+                            <i class="fas fa-file-excel"></i> Tải Excel
                         </button>
                     </div>
-
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition cursor-pointer bg-gray-50 flex-grow flex flex-col justify-center items-center max-h-40 relative group"
-                        id="drop-zone" onclick="document.getElementById('file-upload').click()">
-                        <input type="file" id="file-upload" class="hidden" accept=".pdf,.png,.jpg,.jpeg">
-                        <i
-                            class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2 group-hover:text-blue-500 transition"></i>
-                        <p class="text-gray-600 text-sm font-medium">Click chọn file</p>
-                        <div id="paste-hint"
-                            class="text-[10px] text-gray-400 mt-1 font-mono border border-gray-200 rounded px-2 py-0.5 bg-white">
-                            <i class="fas fa-paste"></i> Hoặc nhấn <b>Ctrl + V</b> để dán ảnh
-                        </div>
-                        <div id="file-name"
-                            class="mt-2 text-xs font-bold text-blue-600 hidden truncate w-full px-2 bg-blue-50 py-1 rounded">
-                        </div>
-                    </div>
-
-                    <!-- Settings -->
-                    <div class="mt-4 space-y-3">
-                        <div>
-                            <label class="block text-gray-700 text-xs font-bold mb-1">Mô hình AI (Server)</label>
-                            <select id="model-select"
-                                class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:border-blue-500">
-                                <option value="gemini-1.5-flash">Đang tải danh sách...</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 text-xs font-bold mb-1">Chế độ</label>
-                            <select id="mode-select"
-                                class="w-full border rounded p-2 text-sm bg-white focus:outline-none focus:border-blue-500">
-                                <option value="latex">Toán học (Latex $...$)</option>
-                                <option value="text">Văn bản thường</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="flex items-center gap-2 text-gray-700 text-xs">
-                                <input type="checkbox" id="preview-mode-checkbox" class="rounded">
-                                <span class="font-bold">🔍 Chế độ xem trước (Preview)</span>
-                            </label>
-                            <p class="text-[10px] text-gray-500 mt-1">Xem trước từng trang và sửa trước khi xuất</p>
-                        </div>
-
-                        <button id="convert-btn" onclick="handleConvert()"
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded shadow transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <i class="fas fa-bolt"></i> Chuyển đổi
-                        </button>
-                        <div id="loading" class="hidden text-center py-2">
-                            <div class="loading-spinner mb-2"></div>
-                            <p class="text-xs text-gray-500">Đang xử lý (Vui lòng chờ)...</p>
+                </div>
+                <div class="relative flex-grow border rounded bg-white overflow-hidden">
+                    <div id="result-preview" class="w-full h-full p-6 overflow-y-auto preview-content bg-white"
+                        style="min-height: 200px; outline: none;" tabindex="0" ondrop="handleDrop(event)"
+                        ondragover="handleDragOver(event)" onpaste="handlePaste(event)"
+                        title="Click vào đây và dán ảnh (Ctrl+V) hoặc kéo thả ảnh vào đây">
+                        <div class="text-center text-gray-400 mt-20" id="preview-placeholder">
+                            <i class="fas fa-file-alt text-4xl mb-3 opacity-20"></i>
+                            <p>Kết quả hiển thị</p>
+                            <p class="text-xs mt-2 text-gray-300">
+                                <i class="fas fa-mouse-pointer"></i> Click vào đây và dán ảnh (Ctrl+V)
+                            </p>
+                            <p class="text-xs text-gray-300">
+                                <i class="fas fa-hand-paper"></i> Hoặc kéo thả ảnh vào đây
+                            </p>
                         </div>
                     </div>
                 </div>
-
-                <!-- CỘT 2: RAW MARKDOWN (AI OUTPUT) -->
-                <div class="glass-card p-6 flex flex-col h-full">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-bold text-gray-700 flex items-center gap-2">
-                            <i class="fas fa-code text-orange-500"></i> Mã nguồn (AI)
-                        </h3>
-                        <button id="copy-btn" onclick="copyToClipboard()"
-                            class="hidden bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded text-xs font-bold transition">
-                            <i class="fas fa-copy"></i> Copy
-                        </button>
-                    </div>
-                    <div class="relative flex-grow border rounded bg-gray-900 overflow-hidden">
-                        <textarea id="result-text"
-                            class="w-full h-full p-4 font-mono text-sm resize-none focus:outline-none bg-gray-900 text-green-400"
-                            placeholder="Mã nguồn Markdown sẽ hiện ở đây..."></textarea>
-                    </div>
-                </div>
-
-                <!-- CỘT 3: RENDER PREVIEW & EXPORT -->
-                <div class="glass-card p-6 flex flex-col h-full">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center gap-2">
-                            <h3 class="font-bold text-gray-700 flex items-center gap-2">
-                                <i class="fas fa-eye text-green-500"></i> Xem trước
-                            </h3>
-                            <span id="img-counter"
-                                class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-0.5 rounded-full hidden border border-blue-200">
-                                <i class="fas fa-images"></i> 0
-                            </span>
-                        </div>
-
-                        <div class="flex gap-2">
-                            <button id="download-btn" onclick="handleDownloadDocx()"
-                                class="hidden bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-bold transition shadow">
-                                <i class="fas fa-file-word"></i> Tải Word
-                            </button>
-                            <button id="download-excel-btn" onclick="handleDownloadExcel()"
-                                class="hidden bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-xs font-bold transition shadow">
-                                <i class="fas fa-file-excel"></i> Tải Excel
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="relative flex-grow border rounded bg-white overflow-hidden flex flex-col">
-                        <div
-                            class="bg-gray-50 px-3 py-1 text-[10px] text-gray-500 border-b flex justify-between select-none">
-                            <span><i class="fas fa-edit"></i> Chế độ chèn ảnh trực quan</span>
-                            <span><i class="fas fa-plus-circle"></i> Ctrl+V để chèn hình minh họa</span>
-                        </div>
-                        <div id="result-preview"
-                            class="w-full h-full p-6 overflow-y-auto preview-content bg-white focus:outline-none"
-                            contenteditable="true" spellcheck="false"
-                            title="Dán ảnh (Ctrl+V) vào đây để chèn hình minh họa trực tiếp">
-
-                            <div class="text-center text-gray-400 mt-20 select-none" id="preview-placeholder">
-                                <i class="fas fa-file-alt text-4xl mb-3 opacity-20"></i>
-                                <p>Vùng xem trước</p>
-                                <p class="text-xs mt-2 text-gray-300">
-                                    Chưa có dữ liệu
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
-        </div> <!-- End Tab OCR -->
 
-        <!-- Tab Content: PDF Tools -->
-        <div id="content-pdf" class="tab-content hidden">
-            <div class="bg-white rounded-lg shadow-lg p-6 max-w-4xl mx-auto">
-                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-800">
-                    <i class="fas fa-cut text-blue-600"></i> Cắt file PDF
-                </h2>
-
-                <!-- File Upload -->
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-bold mb-2">📄 Chọn file PDF:</label>
-                    <input type="file" id="pdf-split-file" accept=".pdf"
-                        class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                    <p id="pdf-info" class="text-xs text-gray-500 mt-2"></p>
-                </div>
-
-                <!-- Split Mode Selection -->
-                <div class="mb-6">
-                    <label class="block font-bold text-gray-700 mb-3">Chế độ cắt:</label>
-                    <div class="space-y-3">
-                        <label class="flex items-center gap-3 p-3 border rounded hover:bg-gray-50 cursor-pointer">
-                            <input type="radio" name="split-mode" value="fixed_pages" checked
-                                class="w-4 h-4 text-blue-600" />
-                            <div class="flex-1">
-                                <div class="font-semibold">Số trang cố định mỗi file</div>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="text-sm text-gray-600">Mỗi file có:</span>
-                                    <input type="number" id="pages-per-chunk" value="10" min="1"
-                                        class="border rounded px-2 py-1 w-20 text-sm" />
-                                    <span class="text-sm text-gray-600">trang</span>
-                                </div>
-                            </div>
-                        </label>
-
-                        <label class="flex items-center gap-3 p-3 border rounded hover:bg-gray-50 cursor-pointer">
-                            <input type="radio" name="split-mode" value="fixed_files" class="w-4 h-4 text-blue-600" />
-                            <div class="flex-1">
-                                <div class="font-semibold">Chia thành số file cụ thể</div>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="text-sm text-gray-600">Số file:</span>
-                                    <input type="number" id="num-files" value="2" min="2"
-                                        class="border rounded px-2 py-1 w-20 text-sm" />
-                                </div>
-                            </div>
-                        </label>
-
-                        <label class="flex items-center gap-3 p-3 border rounded hover:bg-gray-50 cursor-pointer">
-                            <input type="radio" name="split-mode" value="custom_ranges" class="w-4 h-4 text-blue-600" />
-                            <div class="flex-1">
-                                <div class="font-semibold">Khoảng tùy chỉnh</div>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="text-sm text-gray-600">Ví dụ: 1-5, 10-15, 20-25</span>
-                                </div>
-                                <input type="text" id="custom-ranges" placeholder="1-5, 10-20"
-                                    class="border rounded px-3 py-1.5 w-full text-sm mt-2" />
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Split Button -->
-                <button onclick="handlePDFSplit()" id="pdf-split-btn"
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded shadow-lg transition">
-                    <i class="fas fa-cut"></i> Cắt PDF
-                </button>
-
-                <!-- Download Link -->
-                <div id="split-download" class="hidden mt-4 text-center">
-                    <a href="#" download
-                        class="inline-block bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded">
-                        <i class="fas fa-download"></i> Tải file đã cắt (ZIP)
-                    </a>
-                </div>
-
-                <hr class="my-8 border-gray-300">
-
-                <!-- PDF to Images -->
-                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-800">
-                    <i class="fas fa-images text-purple-600"></i> Chuyển PDF sang ảnh
-                </h2>
-
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-bold mb-2">📄 Chọn file PDF:</label>
-                    <input type="file" id="pdf-to-images-file" accept=".pdf"
-                        class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100" />
-                </div>
-
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-bold mb-2">Độ phân giải (DPI):</label>
-                    <select id="dpi-select" class="border rounded px-3 py-2 w-full">
-                        <option value="150">150 DPI (Nhanh)</option>
-                        <option value="300" selected>300 DPI (Chuẩn)</option>
-                        <option value="600">600 DPI (Chất lượng cao)</option>
-                    </select>
-                </div>
-
-                <button onclick="handlePDFToImages()" id="pdf-img-btn"
-                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded shadow-lg transition">
-                    <i class="fas fa-images"></i> Chuyển đổi
-                </button>
-
-                <hr class="my-8 border-gray-300">
-
-                <!-- PDF Merge -->
-                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-800">
-                    <i class="fas fa-layer-group text-green-600"></i> Ghép nhiều PDF
-                </h2>
-
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-bold mb-2">📚 Chọn nhiều file PDF:</label>
-                    <input type="file" id="pdf-merge-files" accept=".pdf" multiple
-                        class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100" />
-                    <p class="text-xs text-gray-500 mt-2">Giữ Ctrl để chọn nhiều file</p>
-                </div>
-
-                <div id="pdf-merge-list" class="mb-6 space-y-2">
-                    <!-- Dynamic list -->
-                </div>
-
-                <button onclick="handlePDFMerge()" id="pdf-merge-btn2"
-                    class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded shadow-lg transition">
-                    <i class="fas fa-layer-group"></i> Ghép PDF
-                </button>
-
-                <hr class="my-8 border-gray-300">
-
-                <!-- PDF Watermark -->
-                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-800">
-                    <i class="fas fa-stamp text-orange-600"></i> Thêm Watermark
-                </h2>
-
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-bold mb-2">📄 Chọn file PDF:</label>
-                    <input type="file" id="pdf-watermark-file" accept=".pdf"
-                        class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" />
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div>
-                        <label class="block text-gray-700 font-bold mb-2">Nội dung watermark:</label>
-                        <input type="text" id="watermark-text" placeholder="Ví dụ: BẢN NHÁP"
-                            class="border rounded px-3 py-2 w-full" />
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 font-bold mb-2">Kích thước chữ:</label>
-                        <input type="number" id="watermark-fontsize" value="40" min="10" max="100"
-                            class="border rounded px-3 py-2 w-full" />
-                    </div>
-                </div>
-
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-bold mb-2">Độ trong suốt: <span
-                            id="opacity-value">0.3</span></label>
-                    <input type="range" id="watermark-opacity" min="0" max="1" step="0.1" value="0.3" class="w-full"
-                        oninput="document.getElementById('opacity-value').innerText = this.value" />
-                </div>
-
-                <button onclick="handlePDFWatermark()" id="pdf-watermark-btn"
-                    class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded shadow-lg transition">
-                    <i class="fas fa-stamp"></i> Thêm Watermark
-                </button>
-            </div>
         </div>
 
-        <!-- Tab Content: Word Tools -->
-        <div id="content-word" class="tab-content hidden">
-            <div class="bg-white rounded-lg shadow-lg p-6 max-w-4xl mx-auto">
-                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-800">
-                    <i class="fas fa-file-word text-blue-600"></i> Ghép file Word
-                </h2>
-
-                <!-- Multi-file Upload -->
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-bold mb-2">📚 Chọn nhiều file Word (.docx):</label>
-                    <input type="file" id="word-merge-files" accept=".docx" multiple
-                        class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                    <p class="text-xs text-gray-500 mt-2">Giữ Ctrl để chọn nhiều file. Thứ tự file sẽ được sắp xếp tự
-                        động.</p>
-                </div>
-
-                <!-- File List -->
-                <div id="word-file-list" class="mb-6 space-y-2">
-                    <!-- Dynamic list items -->
-                </div>
-
-                <!-- Merge Button -->
-                <button onclick="handleWordMerge()" id="word-merge-btn"
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded shadow-lg transition">
-                    <i class="fas fa-layer-group"></i> Ghép file
-                </button>
-            </div>
+        <!-- Status Log -->
+        <div id="status-log"
+            class="mt-auto mb-4 text-xs text-gray-400 font-mono h-16 overflow-y-auto bg-gray-900 p-2 rounded mx-1">
+            > System ready...<br>
         </div>
-
-    </div>
-
-    <!-- Preview Modal -->
-    <div id="preview-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg shadow-2xl w-11/12 h-5/6 flex flex-col">
-            <!-- Modal Header -->
-            <div
-                class="p-4 border-b flex justify-between items-center bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg">
-                <h3 class="text-xl font-bold"><i class="fas fa-search"></i> Xem trước & Chỉnh sửa</h3>
-                <button onclick="closePreviewModal()" class="text-white hover:text-gray-200 text-2xl font-bold">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <!-- Modal Body: 2 Panels -->
-            <div class="flex-1 flex overflow-hidden">
-                <!-- Left: Page Navigator -->
-                <div class="w-1/4 border-r overflow-y-auto p-4 bg-gray-50">
-                    <h4 class="font-bold mb-3 text-gray-700">Danh sách trang:</h4>
-                    <div id="page-navigator" class="space-y-2">
-                        <!-- Page thumbnails -->
-                    </div>
-                </div>
-
-                <!-- Right: Image + Text Editor -->
-                <div class="w-3/4 flex">
-                    <!-- Image Viewer -->
-                    <div class="w-1/2 p-4 overflow-auto bg-gray-100">
-                        <h4 class="font-bold mb-2 text-gray-700">Ảnh gốc:</h4>
-                        <img id="preview-image" src="" class="w-full border rounded shadow" />
-                    </div>
-
-                    <!-- Text Editor -->
-                    <div class="w-1/2 p-4 flex flex-col">
-                        <h4 class="font-bold mb-2 text-gray-700">Văn bản trích xuất:</h4>
-                        <textarea id="preview-text"
-                            class="flex-1 border p-3 font-mono text-sm rounded mb-2 resize-none"></textarea>
-                        <div class="flex gap-2">
-                            <button onclick="reprocessCurrentPage()"
-                                class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 rounded transition">
-                                <i class="fas fa-sync"></i> Xử lý lại
-                            </button>
-                            <button onclick="saveCurrentPage()"
-                                class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded transition">
-                                <i class="fas fa-save"></i> Lưu
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="p-4 border-t flex justify-between bg-gray-50 rounded-b-lg">
-                <button onclick="closePreviewModal()"
-                    class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded transition">
-                    <i class="fas fa-times"></i> Đóng
-                </button>
-                <button onclick="exportAllFromPreview()"
-                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition">
-                    <i class="fas fa-file-word"></i> Xuất tất cả sang Word
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <style>
-        .tab-btn {
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .tab-btn.active {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .tab-btn:not(.active) {
-            background: #f3f4f6;
-            color: #6b7280;
-        }
-
-        .tab-btn:not(.active):hover {
-            background: #e5e7eb;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content:not(.hidden) {
-            display: block;
-        }
-
-        .page-item {
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            transition: all 0.2s;
-        }
-
-        .page-item:hover {
-            background: #dbeafe;
-        }
-
-        .page-item.active {
-            background: #3b82f6;
-            color: white;
-        }
-    </style>
-
-    </div>
-
-    <!-- Status Log -->
-    <div id="status-log"
-        class="mt-auto mb-4 text-xs text-gray-400 font-mono h-16 overflow-y-auto bg-gray-900 p-2 rounded mx-1">
-        > System ready...<br>
-    </div>
     </div>
 
     <!-- MODAL CẢNH BÁO OUT -->
@@ -714,8 +282,6 @@
         // --- GLOBAL VARIABLES ---
         let checkSessionInterval = null;
         let currentMarkdown = "";
-        let userApiKeysString = ""; // Lưu chuỗi keys
-        let pastedImageCount = 0; // Đếm số ảnh đã dán
 
         // --- UTILS ---
         function log(msg) {
@@ -739,73 +305,8 @@
             }
         }
 
-        // --- KEY LOADER (WITH PERSISTENCE) ---
-        // 1. Load keys from localStorage on startup
-        const savedKeys = localStorage.getItem('userApiKeys');
-        if (savedKeys) {
-            userApiKeysString = savedKeys;
-            const count = savedKeys.split(',').length;
-            document.getElementById('key-count').innerText = `Đã nạp ${count} keys (Đã lưu)`;
-            document.getElementById('key-count').className = "text-green-600 font-bold";
-            log(`Đã khôi phục ${count} API Keys từ phiên trước.`);
-        }
-
-        // 2. Load keys from file
-        document.getElementById('key-file-upload').addEventListener('change', function (e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const text = e.target.result;
-                const keys = text.split('\n').map(k => k.trim()).filter(k => k.length > 0);
-
-                if (keys.length > 0) {
-                    userApiKeysString = keys.join(',');
-                    // Save to localStorage
-                    localStorage.setItem('userApiKeys', userApiKeysString);
-
-                    document.getElementById('key-count').innerText = `Đã nạp ${keys.length} keys`;
-                    document.getElementById('key-count').className = "text-green-600 font-bold";
-                    log(`Đã nạp thành công ${keys.length} API Keys.`);
-                } else {
-                    alert("File không chứa API Key hợp lệ nào!");
-                }
-            };
-            reader.readAsText(file);
-        });
-
-        // --- MODEL FETCHING (NEW) ---
-        async function fetchModels() {
-            const select = document.getElementById('model-select');
-            try {
-                const response = await fetch(`${API_URL}/api/models`);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.models && Array.isArray(data.models)) {
-                        select.innerHTML = "";
-                        data.models.forEach(model => {
-                            const opt = document.createElement('option');
-                            opt.value = model;
-                            opt.text = model.toUpperCase();
-                            select.appendChild(opt);
-                        });
-                        log("Đã tải danh sách Models từ Server.");
-                        return;
-                    }
-                }
-            } catch (e) {
-                console.error("Lỗi fetch models:", e);
-                log("Không thể tải Models, dùng mặc định.");
-            }
-            // Fallback
-            select.innerHTML = `
-                <option value="gemini-1.5-flash">GEMINI-1.5-FLASH</option>
-                <option value="gemini-2.5-flash">GEMINI-2.5-FLASH</option>
-            `;
-        }
-
         // --- AUTH LOGIC ---
+
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('authToken');
             const email = localStorage.getItem('userEmail');
@@ -817,7 +318,6 @@
                     if (file) {
                         document.getElementById('file-name').innerText = file.name;
                         document.getElementById('file-name').classList.remove('hidden');
-                        document.getElementById('paste-hint').classList.add('hidden');
                     }
                 });
             }
@@ -931,6 +431,35 @@
             }
         }
 
+        // --- NEW: FETCH MODELS ---
+        async function fetchModels() {
+            const select = document.getElementById('model-select');
+            try {
+                const response = await fetch(`${API_URL}/api/models`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.models && Array.isArray(data.models)) {
+                        select.innerHTML = "";
+                        data.models.forEach(model => {
+                            const opt = document.createElement('option');
+                            opt.value = model;
+                            opt.text = model.toUpperCase();
+                            select.appendChild(opt);
+                        });
+                        log("Đã tải danh sách Models từ server.");
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.error("Lỗi fetch models:", e);
+                log("Không thể tải Models, dùng mặc định.");
+            }
+            select.innerHTML = `
+                <option value="gemini-2.5-flash">GEMINI-2.5-FLASH (Default)</option>
+                <option value="gemini-1.5-pro">GEMINI-1.5-PRO</option>
+            `;
+        }
+
         function showApp(email) {
             document.getElementById('login-container').classList.add('hidden');
             document.getElementById('app-container').classList.remove('hidden');
@@ -939,42 +468,15 @@
             document.body.classList.remove('items-center', 'justify-center');
             document.body.classList.add('items-start');
 
-            // Tải danh sách models từ server
             fetchModels();
         }
 
-        // --- RESET FEATURE ---
-        function handleReset() {
-            if (!confirm("Bạn có chắc muốn xóa toàn bộ file, kết quả và làm mới lại?")) return;
-
-            // 1. Reset file input
-            const fileInput = document.getElementById('file-upload');
-            fileInput.value = "";
-            document.getElementById('file-name').innerText = "";
-            document.getElementById('file-name').classList.add('hidden');
-            document.getElementById('paste-hint').classList.remove('hidden');
-
-            // 2. Reset Textarea và Variables
-            currentMarkdown = "";
-            pastedImageCount = 0;
-            document.getElementById('result-text').value = "";
-
-            // 3. Reset Preview
-            document.getElementById('result-preview').innerHTML = `
-                <div class="text-center text-gray-400 mt-20 select-none" id="preview-placeholder">
-                    <i class="fas fa-file-alt text-4xl mb-3 opacity-20"></i>
-                    <p>Vùng xem trước</p>
-                    <p class="text-xs mt-2 text-gray-300">Chưa có dữ liệu</p>
-                </div>`;
-
-            // 4. Reset Counter & Buttons
-            document.getElementById('img-counter').classList.add('hidden');
-            document.getElementById('img-counter').innerHTML = '<i class="fas fa-images"></i> 0';
-            document.getElementById('download-btn').classList.add('hidden');
-            document.getElementById('download-excel-btn').classList.add('hidden');
-            document.getElementById('copy-btn').classList.add('hidden');
-
-            log("Đã Reset toàn bộ trạng thái.");
+        function showLogin() {
+            document.getElementById('app-container').classList.add('hidden');
+            document.getElementById('login-container').classList.remove('hidden');
+            document.getElementById('logout-modal').classList.add('hidden');
+            document.body.classList.add('items-center', 'justify-center');
+            document.body.classList.remove('items-start');
         }
 
         // --- CONVERT LOGIC ---
@@ -987,12 +489,8 @@
             const loading = document.getElementById('loading');
 
             if (!fileInput.files[0]) {
-                alert("Vui lòng chọn file hoặc dán ảnh vào khung Tải file trước!");
+                alert("Vui lòng chọn file trước!");
                 return;
-            }
-
-            if (!userApiKeysString) {
-                if (!confirm("Bạn chưa nạp API Key. Tiếp tục với Server Key?")) return;
             }
 
             btn.disabled = true;
@@ -1005,11 +503,6 @@
                 formData.append('file', fileInput.files[0]);
                 formData.append('model', modelSelect.value);
                 formData.append('mode', modeSelect.value);
-                if (userApiKeysString) formData.append('api_keys', userApiKeysString);
-
-                // Add preview mode parameter
-                const previewMode = document.getElementById('preview-mode-checkbox')?.checked || false;
-                formData.append('preview', previewMode);
 
                 const response = await fetch(`${API_URL}/api/convert`, {
                     method: 'POST',
@@ -1021,25 +514,18 @@
                     throw new Error(errData.detail || "Lỗi chuyển đổi");
                 }
 
-
                 const data = await response.json();
 
                 if (data.success) {
-                    // Check if preview mode
-                    if (data.preview && data.session_id) {
-                        log("Mở chế độ xem trước...");
-                        showPreviewModal(data);
-                    } else {
-                        // Normal mode
-                        currentMarkdown = data.result;
-                        document.getElementById('result-text').value = currentMarkdown;
-                        updatePreview(true);
+                    currentMarkdown = data.result;
 
-                        document.getElementById('download-btn').classList.remove('hidden');
-                        document.getElementById('download-excel-btn').classList.remove('hidden');
-                        document.getElementById('copy-btn').classList.remove('hidden');
-                        log("Chuyển đổi thành công!");
-                    }
+                    document.getElementById('result-text').value = currentMarkdown;
+                    updatePreview();
+
+                    document.getElementById('download-btn').classList.remove('hidden');
+                    document.getElementById('download-excel-btn').classList.remove('hidden');
+                    document.getElementById('copy-btn').classList.remove('hidden');
+                    log("Chuyển đổi thành công!");
                 } else {
                     throw new Error("Không có kết quả trả về");
                 }
@@ -1055,8 +541,6 @@
         }
 
         async function handleDownloadDocx() {
-            currentMarkdown = document.getElementById('result-text').value;
-
             if (!currentMarkdown) {
                 alert("Không có nội dung để xuất!");
                 return;
@@ -1064,7 +548,7 @@
 
             const btn = document.getElementById('download-btn');
             const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo...';
             btn.disabled = true;
 
             try {
@@ -1077,13 +561,28 @@
                     body: formData
                 });
 
-                if (!response.ok) throw new Error("Lỗi tạo file Word");
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorMsg = "Lỗi tạo file Word";
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        errorMsg = errorData.detail || errorMsg;
+                    } catch (e) {
+                        errorMsg = errorText || errorMsg;
+                    }
+                    throw new Error(errorMsg);
+                }
 
                 const blob = await response.blob();
+
+                if (blob.size === 0) {
+                    throw new Error("File Word rỗng, có thể do lỗi xử lý");
+                }
+
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = "HT_MATH_OUTPUT.docx";
+                a.download = "Ket_qua_HT_MATH.docx";
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -1091,7 +590,10 @@
                 log("Đã tải file Word thành công!");
 
             } catch (e) {
-                alert("Lỗi xuất Word: " + e.message);
+                const errorMsg = e.message || "Lỗi không xác định";
+                alert("Lỗi xuất Word: " + errorMsg);
+                log("Lỗi xuất Word: " + errorMsg);
+                console.error("Export Word error:", e);
             } finally {
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
@@ -1099,8 +601,6 @@
         }
 
         async function handleDownloadExcel() {
-            currentMarkdown = document.getElementById('result-text').value;
-
             if (!currentMarkdown) {
                 alert("Không có nội dung để xuất!");
                 return;
@@ -1108,7 +608,7 @@
 
             const btn = document.getElementById('download-excel-btn');
             const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tạo...';
             btn.disabled = true;
 
             try {
@@ -1121,13 +621,28 @@
                     body: formData
                 });
 
-                if (!response.ok) throw new Error("Lỗi tạo file Excel");
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorMsg = "Lỗi tạo file Excel";
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        errorMsg = errorData.detail || errorMsg;
+                    } catch (e) {
+                        errorMsg = errorText || errorMsg;
+                    }
+                    throw new Error(errorMsg);
+                }
 
                 const blob = await response.blob();
+
+                if (blob.size === 0) {
+                    throw new Error("File Excel rỗng, có thể do lỗi xử lý");
+                }
+
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = "HT_MATH_OUTPUT.xlsx";
+                a.download = "Ket_qua_HT_MATH.xlsx";
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -1135,577 +650,257 @@
                 log("Đã tải file Excel thành công!");
 
             } catch (e) {
-                alert("Lỗi xuất Excel: " + e.message);
+                const errorMsg = e.message || "Lỗi không xác định";
+                alert("Lỗi xuất Excel: " + errorMsg);
+                log("Lỗi xuất Excel: " + errorMsg);
+                console.error("Export Excel error:", e);
             } finally {
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
             }
         }
 
+
         function copyToClipboard() {
-            const text = document.getElementById('result-text').value;
-            if (!text) return;
-            navigator.clipboard.writeText(text).then(() => {
+            if (!currentMarkdown) return;
+            navigator.clipboard.writeText(currentMarkdown).then(() => {
                 alert("Đã copy nội dung Markdown!");
             });
         }
 
-        // --- PREVIEW SYNC ---
-        document.getElementById('result-text').addEventListener('input', (e) => {
-            currentMarkdown = e.target.value;
-            if (window.previewTimeout) clearTimeout(window.previewTimeout);
-            window.previewTimeout = setTimeout(() => {
-                document.getElementById('result-preview').innerHTML = marked.parse(currentMarkdown);
-                if (window.MathJax) MathJax.typesetPromise([document.getElementById('result-preview')]);
-            }, 500);
-        });
+        // --- PASTE IMAGE & DRAG & DROP ---
 
-        // --- PASTE LOGIC (GLOBAL) ---
-        document.addEventListener('paste', async (event) => {
-            // 1. Kiểm tra input text thường
-            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
-                if (event.target.id === 'result-text') {
-                    // Nếu dán vào Code Textarea thì cho phép
-                } else {
-                    return;
-                }
-            }
-
-            const items = event.clipboardData.items;
-            let blob = null;
-            for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    blob = items[i].getAsFile();
-                    break;
-                }
-            }
-
-            if (!blob) return;
-
-            event.preventDefault();
-
-            // 2. Phân biệt vị trí dán
+        // Cho phép chỉnh sửa textarea và tự động cập nhật preview
+        document.addEventListener('DOMContentLoaded', () => {
+            const textarea = document.getElementById('result-text');
             const previewDiv = document.getElementById('result-preview');
-            const isPreviewFocused = (document.activeElement === previewDiv) || previewDiv.contains(document.activeElement);
 
-            if (isPreviewFocused) {
-                await handleInsertImageToPreview(blob);
-            } else {
-                handlePastedImageToInput(blob);
-            }
-        });
-
-        // Mode A: Dán vào Input (Cột 1) - Chỉ nhận file, chờ bấm convert
-        function handlePastedImageToInput(blob) {
-            const fileInput = document.getElementById('file-upload');
-            const fileNameDiv = document.getElementById('file-name');
-            const dropZone = document.getElementById('drop-zone');
-
-            const file = new File([blob], "pasted_image.png", { type: "image/png" });
-
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            fileInput.files = dataTransfer.files;
-
-            fileNameDiv.innerText = "Ảnh từ Clipboard (pasted_image.png)";
-            fileNameDiv.classList.remove('hidden');
-            document.getElementById('paste-hint').classList.add('hidden');
-
-            dropZone.classList.add('dropzone-active');
-            setTimeout(() => dropZone.classList.remove('dropzone-active'), 500);
-
-            log("Đã nhận ảnh từ Clipboard vào khung Tải file.");
-        }
-
-        // Mode B: Dán vào Preview (Cột 3) - CHÈN ẢNH TRỰC TIẾP (Upload Server & Get URL)
-        async function handleInsertImageToPreview(blob) {
-            log("Paste vào Preview: Đang upload ảnh lên Server để lấy link ngắn...");
-
-            // Ẩn placeholder nếu có
-            const placeholder = document.getElementById('preview-placeholder');
-            if (placeholder) placeholder.style.display = 'none';
-
-            // Tạo FormData
-            const formData = new FormData();
-            formData.append('file', blob);
-
-            try {
-                // Upload lên server
-                const response = await fetch(`${API_URL}/api/upload-image`, {
-                    method: 'POST',
-                    body: formData
+            if (textarea) {
+                textarea.addEventListener('input', () => {
+                    currentMarkdown = textarea.value;
+                    updatePreview();
                 });
 
-                if (response.status === 404) throw new Error("API upload chưa có trên server (Lỗi 404). Hãy cập nhật file app.py!");
-                if (!response.ok) throw new Error("Upload thất bại: " + response.statusText);
-
-                const data = await response.json();
-                const shortPath = data.url; // "uploads/ten-file.png"
-                const fullUrl = `${API_URL}/${shortPath}`; // "https://domain.../uploads/ten-file.png"
-
-                // 1. Chèn hình ảnh vào Preview tại vị trí con trỏ (WYSIWYG)
-                // Sử dụng Full URL để hiển thị đúng trên mọi môi trường
-                document.getElementById('result-preview').focus();
-                const imgTag = `<img src="${fullUrl}" style="max-width: 100%; display: block; margin: 10px auto;" />`;
-                document.execCommand('insertHTML', false, imgTag);
-
-                // 2. Cập nhật vào Code Markdown (Append vào cuối)
-                // Sử dụng Short Path (Relative) để server (pypandoc) hiểu được khi xuất Word
-                // Vì server backend có thư mục "uploads/" ngay tại root.
-                const textarea = document.getElementById('result-text');
-                const mdImage = `\n\n![Minh_hoa](${shortPath})\n\n`;
-
-                if (!textarea.value) textarea.value = mdImage;
-                else textarea.value += mdImage;
-
-                currentMarkdown = textarea.value; // Update global var
-
-                // 3. Tăng bộ đếm
-                pastedImageCount++;
-                const counterEl = document.getElementById('img-counter');
-                counterEl.innerHTML = `<i class="fas fa-images"></i> ${pastedImageCount}`;
-                counterEl.classList.remove('hidden');
-
-                // Hiện nút download
-                document.getElementById('download-btn').classList.remove('hidden');
-                document.getElementById('download-excel-btn').classList.remove('hidden');
-                document.getElementById('copy-btn').classList.remove('hidden');
-
-                log(`Đã chèn ảnh #${pastedImageCount} (URL ngắn).`);
-            } catch (error) {
-                alert("Lỗi upload ảnh: " + error.message);
-                log("Lỗi upload ảnh: " + error.message);
+                // CHẶN paste ảnh vào textarea - chỉ cho phép text
+                textarea.addEventListener('paste', (event) => {
+                    const items = event.clipboardData.items;
+                    for (let i = 0; i < items.length; i++) {
+                        const item = items[i];
+                        if (item.type.indexOf('image') !== -1) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            // Hiển thị thông báo và chuyển focus sang preview
+                            const previewDiv = document.getElementById('result-preview');
+                            if (previewDiv) {
+                                previewDiv.focus();
+                                previewDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                            // Hiển thị tooltip
+                            const tooltip = document.createElement('div');
+                            tooltip.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #ff6b6b; color: white; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10000; font-size: 14px;';
+                            tooltip.innerHTML = '<i class="fas fa-info-circle"></i> Vui lòng dán ảnh vào khu vực <strong>Xem trước</strong>, không phải mã nguồn.';
+                            document.body.appendChild(tooltip);
+                            setTimeout(() => {
+                                tooltip.style.transition = 'opacity 0.3s';
+                                tooltip.style.opacity = '0';
+                                setTimeout(() => document.body.removeChild(tooltip), 300);
+                            }, 3000);
+                            return;
+                        }
+                    }
+                });
             }
-        }
 
-        function updatePreview(fullRender = false) {
+            // Paste image vào preview area
+            if (previewDiv) {
+                previewDiv.addEventListener('paste', async (event) => {
+                    const items = event.clipboardData.items;
+                    for (let i = 0; i < items.length; i++) {
+                        const item = items[i];
+                        if (item.type.indexOf('image') !== -1) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            const blob = item.getAsFile();
+                            if (blob) {
+                                await handlePastedImage(blob);
+                            }
+                            return;
+                        }
+                    }
+                });
+            }
+
+            // Paste image toàn cục - chỉ khi KHÔNG ở textarea
+            document.addEventListener('paste', async (event) => {
+                // Bỏ qua nếu đang ở textarea (đã được xử lý riêng - chặn paste ảnh)
+                if (event.target.tagName === 'TEXTAREA' && event.target.id === 'result-text') {
+                    return;
+                }
+
+                // Bỏ qua nếu đang ở preview (đã được xử lý riêng)
+                if (event.target.id === 'result-preview') {
+                    return;
+                }
+
+                // Xử lý paste ảnh ở các vùng khác (ví dụ: body, div khác)
+                const items = event.clipboardData.items;
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    if (item.type.indexOf('image') !== -1) {
+                        event.preventDefault();
+                        const blob = item.getAsFile();
+                        if (blob) {
+                            // Tự động focus vào preview area và paste
+                            const previewDiv = document.getElementById('result-preview');
+                            if (previewDiv) {
+                                previewDiv.focus();
+                            }
+                            await handlePastedImage(blob);
+                        }
+                        break;
+                    }
+                }
+            });
+        });
+
+        function updatePreview() {
             const previewDiv = document.getElementById('result-preview');
-            if (fullRender) {
+            if (!previewDiv) return;
+
+            if (currentMarkdown && currentMarkdown.trim()) {
                 previewDiv.innerHTML = marked.parse(currentMarkdown);
                 const placeholder = document.getElementById('preview-placeholder');
                 if (placeholder) placeholder.style.display = 'none';
-                if (window.MathJax) MathJax.typesetPromise([previewDiv]);
-            }
-        }
 
-        // ===== TAB SWITCHING =====
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-
-            document.getElementById('content-' + tabName).classList.remove('hidden');
-            document.getElementById('tab-' + tabName).classList.add('active');
-        }
-
-        // ===== PDF SPLIT HANDLERS =====
-        async function handlePDFSplit() {
-            const fileInput = document.getElementById('pdf-split-file');
-            const mode = document.querySelector('input[name="split-mode"]:checked').value;
-            const btn = document.getElementById('pdf-split-btn');
-
-            if (!fileInput.files[0]) {
-                alert('⚠️ Vui lòng chọn file PDF');
-                return;
-            }
-
-            let params = {};
-            if (mode === 'fixed_pages') {
-                params = { pages_per_chunk: parseInt(document.getElementById('pages-per-chunk').value) };
-            } else if (mode === 'fixed_files') {
-                params = { num_files: parseInt(document.getElementById('num-files').value) };
+                if (window.MathJax) {
+                    MathJax.typesetPromise([previewDiv]).catch((err) => {
+                        console.log('MathJax error:', err);
+                    });
+                }
             } else {
-                params = { ranges: document.getElementById('custom-ranges').value };
-            }
-
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            formData.append('mode', mode);
-            formData.append('params', JSON.stringify(params));
-
-            try {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-
-                const response = await fetch(`${API_URL}/api/pdf/split`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Split failed');
-                }
-
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                const link = document.getElementById('split-download').querySelector('a');
-                link.href = url;
-                link.download = 'split_pdfs.zip';
-                document.getElementById('split-download').classList.remove('hidden');
-
-                log('✅ Cắt PDF thành công!');
-            } catch (error) {
-                console.error(error);
-                alert('❌ Lỗi: ' + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-cut"></i> Cắt PDF';
+                const placeholder = document.getElementById('preview-placeholder');
+                if (placeholder) placeholder.style.display = 'block';
             }
         }
 
-        // ===== WORD MERGE HANDLERS =====
-        document.getElementById('word-merge-files')?.addEventListener('change', function (e) {
-            const fileList = document.getElementById('word-file-list');
-            fileList.innerHTML = '';
-
-            for (let i = 0; i < e.target.files.length; i++) {
-                const file = e.target.files[i];
-                const div = document.createElement('div');
-                div.className = 'flex items-center gap-2 p-2 bg-gray-50 rounded border';
-                div.innerHTML = `
-                    <span class="text-blue-600 font-bold">${i + 1}.</span>
-                    <i class="fas fa-file-word text-blue-600"></i>
-                    <span class="flex-1 text-sm">${file.name}</span>
-                    <span class="text-xs text-gray-500">${(file.size / 1024).toFixed(1)} KB</span>
-                `;
-                fileList.appendChild(div);
-            }
-        });
-
-        async function handleWordMerge() {
-            const fileInput = document.getElementById('word-merge-files');
-            const btn = document.getElementById('word-merge-btn');
-
-            if (!fileInput.files || fileInput.files.length < 2) {
-                alert('⚠️ Vui lòng chọn ít nhất 2 file Word');
+        async function handlePastedImage(blob) {
+            if (!blob) {
+                log("Không có ảnh để xử lý");
                 return;
             }
 
-            const formData = new FormData();
-            for (let file of fileInput.files) {
-                formData.append('files', file);
+            log("Đang xử lý ảnh đã dán...");
+
+            // Hiển thị loading
+            const loadingDiv = document.getElementById('loading');
+            const convertBtn = document.getElementById('convert-btn');
+            if (loadingDiv) loadingDiv.classList.remove('hidden');
+            if (convertBtn) {
+                convertBtn.disabled = true;
+                convertBtn.classList.add('hidden');
             }
 
             try {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang ghép...';
+                const formData = new FormData();
+                formData.append('file', blob, 'pasted-image.png');
+                formData.append('model', document.getElementById('model-select').value);
+                formData.append('mode', document.getElementById('mode-select').value);
 
-                const response = await fetch(`${API_URL}/api/word/merge`, {
+                const response = await fetch(`${API_URL}/api/convert`, {
                     method: 'POST',
                     body: formData
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Merge failed');
+                    const errData = await response.json().catch(() => ({ detail: "Lỗi không xác định" }));
+                    throw new Error(errData.detail || "Lỗi chuyển đổi ảnh");
                 }
-
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'merged.docx';
-                a.click();
-
-                log('✅ Ghép file thành công!');
-            } catch (error) {
-                console.error(error);
-                alert('❌ Lỗi: ' + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-layer-group"></i> Ghép file';
-            }
-        }
-
-        // ===== PREVIEW MODAL HANDLERS =====
-        let currentSession = null;
-        let currentPageIndex = 0;
-
-        function showPreviewModal(sessionData) {
-            currentSession = sessionData;
-            currentPageIndex = 0;
-
-            const navigator = document.getElementById('page-navigator');
-            navigator.innerHTML = '';
-
-            sessionData.pages.forEach((page, idx) => {
-                const div = document.createElement('div');
-                div.className = `page-item ${idx === 0 ? 'active' : ''}`;
-                div.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        <span class="font-bold">Trang ${page.page_num}</span>
-                        <span class="text-xs ${page.status === 'success' ? 'text-green-600' : 'text-red-600'}">
-                            ${page.status === 'success' ? '✓' : '✗'}
-                        </span>
-                    </div>
-                `;
-                div.onclick = () => loadPreviewPage(idx);
-                navigator.appendChild(div);
-            });
-
-            loadPreviewPage(0);
-            document.getElementById('preview-modal').classList.remove('hidden');
-        }
-
-        function loadPreviewPage(index) {
-            if (!currentSession) return;
-
-            currentPageIndex = index;
-            const page = currentSession.pages[index];
-
-            document.getElementById('preview-image').src = page.image_base64;
-            document.getElementById('preview-text').value = page.text;
-
-            document.querySelectorAll('.page-item').forEach((el, idx) => {
-                if (idx === index) {
-                    el.classList.add('active');
-                } else {
-                    el.classList.remove('active');
-                }
-            });
-        }
-
-        async function reprocessCurrentPage() {
-            if (!currentSession) return;
-
-            const page = currentSession.pages[currentPageIndex];
-            const model = document.getElementById('model-select').value;
-            const mode = document.getElementById('mode-select').value;
-
-            const formData = new FormData();
-            formData.append('session_id', currentSession.session_id);
-            formData.append('page_num', page.page_num);
-            formData.append('model', model);
-            formData.append('mode', mode);
-
-            try {
-                log('🔄 Đang xử lý lại...');
-
-                const response = await fetch(`${API_URL}/api/reprocess-page`, {
-                    method: 'POST',
-                    body: formData
-                });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    currentSession.pages[currentPageIndex].text = data.text;
-                    loadPreviewPage(currentPageIndex);
-                    log('✅ Xử lý lại thành công!');
+                    // Nối kết quả vào markdown hiện tại (tại vị trí con trỏ nếu có)
+                    const textarea = document.getElementById('result-text');
+                    const existingText = textarea.value;
+                    const cursorPos = textarea.selectionStart || existingText.length;
+
+                    // Chèn vào vị trí con trỏ hoặc cuối cùng
+                    const beforeText = existingText.substring(0, cursorPos);
+                    const afterText = existingText.substring(cursorPos);
+                    const separator = (beforeText && afterText) ? '\n\n' : (beforeText || afterText) ? '\n\n' : '';
+                    const newText = beforeText + separator + data.result + (afterText ? '\n\n' + afterText : '');
+
+                    currentMarkdown = newText;
+                    textarea.value = currentMarkdown;
+
+                    // Đặt lại vị trí con trỏ
+                    const newCursorPos = cursorPos + separator.length + data.result.length;
+                    textarea.setSelectionRange(newCursorPos, newCursorPos);
+                    textarea.focus();
+
+                    updatePreview();
+
+                    document.getElementById('download-btn').classList.remove('hidden');
+                    document.getElementById('download-excel-btn').classList.remove('hidden');
+                    document.getElementById('copy-btn').classList.remove('hidden');
+                    log("Đã xử lý ảnh đã dán thành công!");
                 } else {
-                    throw new Error(data.detail || 'Reprocess failed');
-                }
-            } catch (error) {
-                console.error(error);
-                alert('❌ Lỗi: ' + error.message);
-            }
-        }
-
-        function saveCurrentPage() {
-            if (!currentSession) return;
-
-            const newText = document.getElementById('preview-text').value;
-            currentSession.pages[currentPageIndex].text = newText;
-
-            log('💾 Đã lưu thay đổi');
-        }
-
-        function closePreviewModal() {
-            document.getElementById('preview-modal').classList.add('hidden');
-            currentSession = null;
-        }
-
-        async function exportAllFromPreview() {
-            if (!currentSession) return;
-
-            const allText = currentSession.pages.map(p => p.text).join('\n\n');
-
-            const formData = new FormData();
-            formData.append('markdown_text', allText);
-
-            try {
-                const response = await fetch(`${API_URL}/api/export-docx`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'ket_qua_HT_MATH.docx';
-                a.click();
-
-                log('✅ Xuất Word thành công!');
-                closePreviewModal();
-            } catch (error) {
-                console.error(error);
-                alert('❌ Lỗi xuất file: ' + error.message);
-            }
-        }
-
-        // ===== PHASE 2: PDF TO IMAGES =====
-        async function handlePDFToImages() {
-            const fileInput = document.getElementById('pdf-to-images-file');
-            const dpi = document.getElementById('dpi-select').value;
-            const btn = document.getElementById('pdf-img-btn');
-
-            if (!fileInput.files[0]) {
-                alert('⚠️ Vui lòng chọn file PDF');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            formData.append('dpi', dpi);
-
-            try {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang chuyển đổi...';
-
-                const response = await fetch(`${API_URL}/api/pdf/to-images`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Conversion failed');
+                    throw new Error("Không có kết quả trả về");
                 }
 
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'pdf_images.zip';
-                a.click();
-
-                log('✅ Chuyển PDF sang ảnh thành công!');
             } catch (error) {
-                console.error(error);
-                alert('❌ Lỗi: ' + error.message);
+                alert("Lỗi xử lý ảnh: " + error.message);
+                log("Lỗi: " + error.message);
+                console.error("Paste image error:", error);
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-images"></i> Chuyển đổi';
+                if (loadingDiv) loadingDiv.classList.add('hidden');
+                if (convertBtn) {
+                    convertBtn.disabled = false;
+                    convertBtn.classList.remove('hidden');
+                }
             }
         }
 
-        // ===== PHASE 2: PDF MERGE =====
-        document.getElementById('pdf-merge-files')?.addEventListener('change', function (e) {
-            const fileList = document.getElementById('pdf-merge-list');
-            fileList.innerHTML = '';
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.style.backgroundColor = '#f0f9ff';
+        }
 
-            for (let i = 0; i < e.target.files.length; i++) {
-                const file = e.target.files[i];
-                const div = document.createElement('div');
-                div.className = 'flex items-center gap-2 p-2 bg-gray-50 rounded border';
-                div.innerHTML = `
-                    <span class="text-green-600 font-bold">${i + 1}.</span>
-                    <i class="fas fa-file-pdf text-red-600"></i>
-                    <span class="flex-1 text-sm">${file.name}</span>
-                    <span class="text-xs text-gray-500">${(file.size / 1024).toFixed(1)} KB</span>
-                `;
-                fileList.appendChild(div);
-            }
-        });
+        function handleDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.style.backgroundColor = '';
 
-        async function handlePDFMerge() {
-            const fileInput = document.getElementById('pdf-merge-files');
-            const btn = document.getElementById('pdf-merge-btn2');
-
-            if (!fileInput.files || fileInput.files.length < 2) {
-                alert('⚠️ Vui lòng chọn ít nhất 2 file PDF');
-                return;
-            }
-
-            const formData = new FormData();
-            for (let file of fileInput.files) {
-                formData.append('files', file);
-            }
-
-            try {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang ghép...';
-
-                const response = await fetch(`${API_URL}/api/pdf/merge`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Merge failed');
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    handlePastedImage(file);
+                } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+                    // Xử lý PDF được kéo thả
+                    const fileInput = document.getElementById('file-upload');
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    fileInput.files = dataTransfer.files;
+                    document.getElementById('file-name').innerText = file.name;
+                    document.getElementById('file-name').classList.remove('hidden');
+                    handleConvert();
                 }
-
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'merged.pdf';
-                a.click();
-
-                log('✅ Ghép PDF thành công!');
-            } catch (error) {
-                console.error(error);
-                alert('❌ Lỗi: ' + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-layer-group"></i> Ghép PDF';
             }
         }
 
-        // ===== PHASE 2: PDF WATERMARK =====
-        async function handlePDFWatermark() {
-            const fileInput = document.getElementById('pdf-watermark-file');
-            const text = document.getElementById('watermark-text').value;
-            const opacity = parseFloat(document.getElementById('watermark-opacity').value);
-            const fontSize = parseInt(document.getElementById('watermark-fontsize').value);
-            const btn = document.getElementById('pdf-watermark-btn');
-
-            if (!fileInput.files[0]) {
-                alert('⚠️ Vui lòng chọn file PDF');
-                return;
-            }
-
-            if (!text) {
-                alert('⚠️ Vui lòng nhập nội dung watermark');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            formData.append('text', text);
-            formData.append('opacity', opacity);
-            formData.append('font_size', fontSize);
-
-            try {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-
-                const response = await fetch(`${API_URL}/api/pdf/watermark`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Watermark failed');
+        function handlePaste(event) {
+            // Xử lý paste trong preview area
+            const items = event.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item.type.indexOf('image') !== -1) {
+                    event.preventDefault();
+                    const blob = item.getAsFile();
+                    handlePastedImage(blob);
+                    break;
                 }
-
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'watermarked.pdf';
-                a.click();
-
-                log('✅ Thêm watermark thành công!');
-            } catch (error) {
-                console.error(error);
-                alert('❌ Lỗi: ' + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-stamp"></i> Thêm Watermark';
             }
         }
     </script>
