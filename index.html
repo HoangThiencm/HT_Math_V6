@@ -418,6 +418,94 @@
                         <i class="fas fa-download"></i> Tải file đã cắt (ZIP)
                     </a>
                 </div>
+
+                <hr class="my-8 border-gray-300">
+
+                <!-- PDF to Images -->
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-800">
+                    <i class="fas fa-images text-purple-600"></i> Chuyển PDF sang ảnh
+                </h2>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-bold mb-2">📄 Chọn file PDF:</label>
+                    <input type="file" id="pdf-to-images-file" accept=".pdf"
+                        class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100" />
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-bold mb-2">Độ phân giải (DPI):</label>
+                    <select id="dpi-select" class="border rounded px-3 py-2 w-full">
+                        <option value="150">150 DPI (Nhanh)</option>
+                        <option value="300" selected>300 DPI (Chuẩn)</option>
+                        <option value="600">600 DPI (Chất lượng cao)</option>
+                    </select>
+                </div>
+
+                <button onclick="handlePDFToImages()" id="pdf-img-btn"
+                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded shadow-lg transition">
+                    <i class="fas fa-images"></i> Chuyển đổi
+                </button>
+
+                <hr class="my-8 border-gray-300">
+
+                <!-- PDF Merge -->
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-800">
+                    <i class="fas fa-layer-group text-green-600"></i> Ghép nhiều PDF
+                </h2>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-bold mb-2">📚 Chọn nhiều file PDF:</label>
+                    <input type="file" id="pdf-merge-files" accept=".pdf" multiple
+                        class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100" />
+                    <p class="text-xs text-gray-500 mt-2">Giữ Ctrl để chọn nhiều file</p>
+                </div>
+
+                <div id="pdf-merge-list" class="mb-6 space-y-2">
+                    <!-- Dynamic list -->
+                </div>
+
+                <button onclick="handlePDFMerge()" id="pdf-merge-btn2"
+                    class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded shadow-lg transition">
+                    <i class="fas fa-layer-group"></i> Ghép PDF
+                </button>
+
+                <hr class="my-8 border-gray-300">
+
+                <!-- PDF Watermark -->
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-800">
+                    <i class="fas fa-stamp text-orange-600"></i> Thêm Watermark
+                </h2>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-bold mb-2">📄 Chọn file PDF:</label>
+                    <input type="file" id="pdf-watermark-file" accept=".pdf"
+                        class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Nội dung watermark:</label>
+                        <input type="text" id="watermark-text" placeholder="Ví dụ: BẢN NHÁP"
+                            class="border rounded px-3 py-2 w-full" />
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">Kích thước chữ:</label>
+                        <input type="number" id="watermark-fontsize" value="40" min="10" max="100"
+                            class="border rounded px-3 py-2 w-full" />
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-bold mb-2">Độ trong suốt: <span
+                            id="opacity-value">0.3</span></label>
+                    <input type="range" id="watermark-opacity" min="0" max="1" step="0.1" value="0.3" class="w-full"
+                        oninput="document.getElementById('opacity-value').innerText = this.value" />
+                </div>
+
+                <button onclick="handlePDFWatermark()" id="pdf-watermark-btn"
+                    class="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded shadow-lg transition">
+                    <i class="fas fa-stamp"></i> Thêm Watermark
+                </button>
             </div>
         </div>
 
@@ -1418,6 +1506,171 @@
             } catch (error) {
                 console.error(error);
                 alert('❌ Lỗi xuất file: ' + error.message);
+            }
+        }
+
+        // ===== PHASE 2: PDF TO IMAGES =====
+        async function handlePDFToImages() {
+            const fileInput = document.getElementById('pdf-to-images-file');
+            const dpi = document.getElementById('dpi-select').value;
+            const btn = document.getElementById('pdf-img-btn');
+
+            if (!fileInput.files[0]) {
+                alert('⚠️ Vui lòng chọn file PDF');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('dpi', dpi);
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang chuyển đổi...';
+
+                const response = await fetch(`${API_URL}/api/pdf/to-images`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Conversion failed');
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'pdf_images.zip';
+                a.click();
+
+                log('✅ Chuyển PDF sang ảnh thành công!');
+            } catch (error) {
+                console.error(error);
+                alert('❌ Lỗi: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-images"></i> Chuyển đổi';
+            }
+        }
+
+        // ===== PHASE 2: PDF MERGE =====
+        document.getElementById('pdf-merge-files')?.addEventListener('change', function (e) {
+            const fileList = document.getElementById('pdf-merge-list');
+            fileList.innerHTML = '';
+
+            for (let i = 0; i < e.target.files.length; i++) {
+                const file = e.target.files[i];
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-2 p-2 bg-gray-50 rounded border';
+                div.innerHTML = `
+                    <span class="text-green-600 font-bold">${i + 1}.</span>
+                    <i class="fas fa-file-pdf text-red-600"></i>
+                    <span class="flex-1 text-sm">${file.name}</span>
+                    <span class="text-xs text-gray-500">${(file.size / 1024).toFixed(1)} KB</span>
+                `;
+                fileList.appendChild(div);
+            }
+        });
+
+        async function handlePDFMerge() {
+            const fileInput = document.getElementById('pdf-merge-files');
+            const btn = document.getElementById('pdf-merge-btn2');
+
+            if (!fileInput.files || fileInput.files.length < 2) {
+                alert('⚠️ Vui lòng chọn ít nhất 2 file PDF');
+                return;
+            }
+
+            const formData = new FormData();
+            for (let file of fileInput.files) {
+                formData.append('files', file);
+            }
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang ghép...';
+
+                const response = await fetch(`${API_URL}/api/pdf/merge`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Merge failed');
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'merged.pdf';
+                a.click();
+
+                log('✅ Ghép PDF thành công!');
+            } catch (error) {
+                console.error(error);
+                alert('❌ Lỗi: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-layer-group"></i> Ghép PDF';
+            }
+        }
+
+        // ===== PHASE 2: PDF WATERMARK =====
+        async function handlePDFWatermark() {
+            const fileInput = document.getElementById('pdf-watermark-file');
+            const text = document.getElementById('watermark-text').value;
+            const opacity = parseFloat(document.getElementById('watermark-opacity').value);
+            const fontSize = parseInt(document.getElementById('watermark-fontsize').value);
+            const btn = document.getElementById('pdf-watermark-btn');
+
+            if (!fileInput.files[0]) {
+                alert('⚠️ Vui lòng chọn file PDF');
+                return;
+            }
+
+            if (!text) {
+                alert('⚠️ Vui lòng nhập nội dung watermark');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('text', text);
+            formData.append('opacity', opacity);
+            formData.append('font_size', fontSize);
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
+                const response = await fetch(`${API_URL}/api/pdf/watermark`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Watermark failed');
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'watermarked.pdf';
+                a.click();
+
+                log('✅ Thêm watermark thành công!');
+            } catch (error) {
+                console.error(error);
+                alert('❌ Lỗi: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-stamp"></i> Thêm Watermark';
             }
         }
     </script>
